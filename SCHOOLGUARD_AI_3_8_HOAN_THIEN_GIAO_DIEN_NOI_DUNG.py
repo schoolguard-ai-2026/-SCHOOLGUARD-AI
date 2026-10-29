@@ -10,7 +10,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 
-st.set_page_config(page_title='SCHOOLGUARD AI – Lá chắn số học đường 3.4', page_icon='🛡️', layout='wide')
+st.set_page_config(
+    page_title="Phần mềm hỗ trợ học sinh THCS nhận diện nguy cơ và ứng xử an toàn trên không gian mạng",
+    page_icon="🛡️",
+    layout="wide"
+)
 
 def normalize(text):
     text = text.lower().replace('đ', 'd')
@@ -189,11 +193,11 @@ h2, h3 {letter-spacing: -0.01em;}
 div.stButton > button, div.stFormSubmitButton > button {border-radius: 9px; font-weight: 600;}
 [data-testid="stAlert"] {border-radius: 10px;}
 </style>""", unsafe_allow_html=True)
-st.title('🛡️ SCHOOLGUARD AI – LÁ CHẮN SỐ HỌC ĐƯỜNG')
+st.title("PHẦN MỀM HỖ TRỢ HỌC SINH THCS NHẬN DIỆN NGUY CƠ VÀ ỨNG XỬ AN TOÀN TRÊN KHÔNG GIAN MẠNG")
 st.caption('Nhận diện nguy cơ • Rèn kỹ năng • Bảo vệ bản thân')
 st.info('Đây là phần mềm học tập sử dụng tình huống giả lập. Không nhập mật khẩu, mã xác thực OTP hoặc thông tin cá nhân thật. Kết quả chỉ mang tính tham khảo, không bảo đảm tin nhắn an toàn.')
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử tin nhắn', '🎭 Góc tình huống', 'ℹ️ Giới thiệu'])
+tab1, tab2, tab3, tab4, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử tin nhắn', '🎭 Góc tình huống', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
 
 with tab1:
     st.subheader('🔎 Kiểm tra mức độ an toàn của tin nhắn')
@@ -250,7 +254,7 @@ with tab1:
                 st.write('② Chỉ làm theo yêu cầu sau khi biết rõ nguồn gửi.')
                 st.write('③ Không chia sẻ mã OTP, mật khẩu hoặc thông tin riêng tư.')
                 st.caption('Cảnh báo thấp không có nghĩa là tin nhắn chắc chắn an toàn.')
-            st.caption('SCHOOLGUARD AI là nguyên mẫu giáo dục; không thay thế việc xác minh thực tế.')
+          st.caption('Đây là phần mềm hỗ trợ giáo dục, giúp học sinh nhận diện nguy cơ và rèn luyện kỹ năng ứng xử an toàn trên không gian mạng; không thay thế việc xác minh thực tế hoặc sự hỗ trợ của thầy cô, cha mẹ.')
 
 QUIZ_BANK = [('Tin nhắn yêu cầu mã OTP để nhận học bổng, em nên làm gì?', ['Gửi mã OTP vì tin nhắn nhắc đến học bổng', 'Hỏi trực tiếp thầy cô để kiểm tra', 'Nhắn lại hỏi người gửi có đúng là cán bộ nhà trường không'], 1, 'Không chia sẻ mã OTP; hỏi thầy cô để xác minh.'), ('Em nhận được thông báo trúng thưởng nhưng phải nộp phí trước. Em nên làm gì?', ['Nộp phí nhỏ để giữ phần thưởng', 'Không chuyển tiền, kiểm tra lại thông tin', 'Hỏi người gửi xem có thể nhận thưởng sau không'], 1, 'Yêu cầu phí trước là dấu hiệu đáng nghi.'), ('Cô giáo nhắn nhắc lớp nộp bài tập. Em nên nhận xét thế nào?', ['Có thể là thông báo học tập', 'Chỉ tin khi có nhiều bạn chuyển tiếp', 'Cần đăng nhập qua đường liên kết trong tin nhắn'], 0, 'Thông báo học tập có thể bình thường, nhưng nên kiểm tra người gửi.'), ('Một đường liên kết lạ yêu cầu em đăng nhập tài khoản ngân hàng. Em nên làm gì?', ['Mở liên kết để xem giao diện trước', 'Không bấm đường liên kết, tự mở ứng dụng chính thức', 'Hỏi người gửi xem đường liên kết có an toàn không'], 1, 'Chỉ đăng nhập qua ứng dụng hoặc trang chính thức.'), ('Người lạ hỏi mật khẩu tài khoản của em. Em nên làm gì?', ['Từ chối', 'Chỉ gửi một phần mật khẩu để kiểm tra', 'Đổi mật khẩu rồi gửi mật khẩu cũ'], 0, 'Mật khẩu là thông tin riêng tư.'), ('Em nhận được tin nhắn thúc giục chuyển tiền vì có việc khẩn cấp. Em nên làm gì?', ['Chuyển một khoản nhỏ trước', 'Xác minh qua kênh khác', 'Nhắn hỏi lại ngay trên cùng tài khoản'], 1, 'Tin khẩn cấp cần được xác minh qua kênh khác.'), ('Bài học nhắc học sinh không chia sẻ mã OTP. Em nên hiểu thông tin này thế nào?', ['Đó là yêu cầu cung cấp mã OTP', 'Đó là lời nhắc bảo vệ tài khoản', 'Em phải gửi mã OTP cho giáo viên'], 1, 'Lời nhắc không chia sẻ mã OTP là nội dung giáo dục an toàn số.'), ('Một người tự nhận là giáo viên yêu cầu em nộp phí để nhận học bổng. Em nên làm gì?', ['Liên hệ trực tiếp với thầy cô hoặc nhà trường', 'Yêu cầu người gửi chụp ảnh thẻ giáo viên', 'Chờ người gửi xác nhận lại bằng tin nhắn'], 0, 'Hãy liên hệ trực tiếp với nhà trường.'), ('Nếu đã mở một đường liên kết đáng ngờ, em nên làm gì?', ['Thoát trang và tiếp tục sử dụng tài khoản bình thường', 'Ngừng thao tác và báo người lớn', 'Gửi liên kết cho bạn kiểm tra giúp'], 1, 'Ngừng thao tác và nhờ người lớn hỗ trợ.'), ('Khi phần mềm đưa ra mức cảnh báo thấp, em nên làm gì?', ['Có thể làm theo nếu nội dung không yêu cầu tiền', 'Vẫn phải kiểm tra người gửi', 'Có thể bỏ qua bước xác minh nếu tin ngắn'], 1, 'Cảnh báo thấp không có nghĩa là chắc chắn an toàn.'), ('Người lạ gửi đường liên kết để nhận quà miễn phí. Em nên làm gì?', ['Kiểm tra nguồn và hỏi người lớn', 'Nhập mật khẩu', 'Gửi mã OTP'], 0, 'Không đăng nhập qua đường dẫn chưa xác minh.'), ('Người lạ hỏi xin ảnh giấy tờ tùy thân của bố mẹ em. Em nên làm gì?', ['Gửi ngay', 'Từ chối và báo người lớn', 'Đăng lên nhóm'], 1, 'Giấy tờ tùy thân là thông tin riêng tư.'), ('Một người nhắn tin tự nhận là cô giáo nhưng xin chuyển tiền gấp?', ['Chuyển ngay', 'Hỏi trực tiếp cô qua kênh đã biết', 'Đưa mật khẩu'], 1, 'Tên và ảnh đại diện có thể bị giả mạo.'), ('Một người gửi tệp cài đặt ứng dụng không rõ nguồn gốc để xem điểm thi. Em nên làm gì?', ['Cài ngay', 'Gửi tiếp cho cả lớp', 'Không cài và hỏi giáo viên'], 2, 'Tệp cài đặt không rõ nguồn có thể gây hại.'), ('Tin nhắn bảo quét mã QR để đăng nhập nhận quà?', ['Quét và nhập mật khẩu', 'Không đăng nhập khi chưa xác minh', 'Nhờ bạn nhập hộ'], 1, 'Mã QR cũng có thể dẫn tới trang giả mạo.'), ('Tài khoản của bạn thân nhắn mượn tiền, nhưng cách nói chuyện khác thường. Em nên làm gì?', ['Gọi trực tiếp để xác minh', 'Chuyển ngay', 'Gửi mã OTP'], 0, 'Tài khoản người quen có thể bị chiếm quyền.'), ('Người lạ hỏi địa chỉ nhà và giờ em ở nhà một mình?', ['Trả lời đầy đủ', 'Gửi vị trí', 'Không cung cấp và báo người lớn'], 2, 'Không chia sẻ lịch sinh hoạt riêng tư.'), ('Một trang web yêu cầu tắt bảo mật điện thoại để nhận quà?', ['Làm theo', 'Không tắt bảo mật', 'Đưa điện thoại cho người lạ'], 1, 'Không tắt các tính năng bảo vệ theo lời người lạ.'), ('Tin nhắn báo tài khoản bị khóa và giục bấm đường liên kết trong 5 phút?', ['Bấm ngay', 'Nhập mật khẩu', 'Tự mở ứng dụng chính thức để kiểm tra'], 2, 'Kẻ xấu thường tạo áp lực thời gian.'), ('Người lạ đề nghị chia sẻ màn hình để giúp lấy lại tài khoản?', ['Từ chối và tìm hỗ trợ chính thức', 'Chia sẻ ngay', 'Gửi mã OTP'], 0, 'Chia sẻ màn hình có thể lộ dữ liệu.'), ('Có người đe dọa tung ảnh riêng tư nếu em không chuyển tiền?', ['Chuyển tiền', 'Lưu bằng chứng và báo người lớn', 'Gửi thêm ảnh'], 1, 'Không làm theo đe dọa, hãy tìm hỗ trợ.'), ('Em đọc được bài đăng nhắc mọi người không chia sẻ mã OTP. Em nên nhận xét thế nào?', ['Đây có thể là lời nhắc an toàn', 'Phải gửi mã OTP', 'Chắc chắn lừa đảo'], 0, 'Cần phân biệt lời cảnh báo với yêu cầu nguy hiểm.'), ('Một người tự nhận là nhân viên giao hàng yêu cầu em đọc mã xác thực vừa nhận được. Em nên làm gì?', ['Đọc mã ngay', 'Đăng mã lên nhóm', 'Không cung cấp mã và kiểm tra đơn hàng'], 2, 'Không tiết lộ mã đăng nhập hoặc xác thực.'), ('Em nhận lời mời làm nhiệm vụ trên mạng phải nạp tiền trước?', ['Nạp thử ít tiền', 'Không nạp tiền và hỏi người lớn', 'Vay tiền để nạp'], 1, 'Lời hứa kiếm tiền dễ dàng kèm yêu cầu nạp tiền là dấu hiệu đáng nghi.'), ('Nhóm lớp thông báo lịch kiểm tra qua kênh chính thức?', ['Có thể là thông báo học tập', 'Phải chuyển tiền', 'Phải gửi mật khẩu'], 0, 'Thông báo học tập thông thường vẫn nên đối chiếu lịch chính thức.'), ('Một người gửi đường liên kết bình chọn và yêu cầu đăng nhập mạng xã hội. Em nên làm gì?', ['Đăng nhập ngay', 'Gửi mật khẩu', 'Xác minh đường liên kết trước, không nhập mật khẩu ở trang lạ'], 2, 'Lời mời bình chọn có thể dẫn đến trang giả.'), ('Em nghi ngờ tài khoản của mình đã bị người khác chiếm quyền. Em nên làm gì?', ['Bỏ qua', 'Đổi mật khẩu qua ứng dụng chính thức và báo người lớn', 'Đưa mật khẩu cho người lạ'], 1, 'Hãy bảo vệ tài khoản qua kênh chính thức.'), ('Người lạ hứa tặng vật phẩm trong trò chơi nếu em gửi mật khẩu. Em nên làm gì?', ['Từ chối', 'Gửi mật khẩu', 'Đăng mật khẩu'], 0, 'Không đổi mật khẩu lấy quà.'), ('Tin nhắn báo tai nạn và giục mở đường liên kết để xem hình ảnh?', ['Mở đường liên kết ngay', 'Chia sẻ ngay', 'Gọi xác minh qua số quen thuộc, không bấm đường liên kết'], 2, 'Tin gây hoảng sợ có thể dụ bấm đường liên kết.'), ('Thầy cô nhắc không cung cấp thông tin cá nhân cho người lạ?', ['Làm ngược lại', 'Ghi nhớ và thực hiện', 'Gửi thông tin để xác nhận'], 1, 'Đây là lời nhắc bảo vệ thông tin.'), ('Một tài khoản bán hàng yêu cầu đặt cọc nhưng em chưa xác minh được người bán. Em nên làm gì?', ['Kiểm tra người bán và hỏi người lớn', 'Chuyển ngay', 'Gửi mã OTP'], 0, 'Xác minh trước khi giao dịch.'), ('Có tin nhắn nói em trúng thưởng nhưng phải nộp phí?', ['Nộp phí', 'Gửi giấy tờ', 'Không chuyển tiền, kiểm tra nguồn'], 2, 'Nộp phí trước để nhận thưởng là dấu hiệu đáng nghi.'), ('Em nhận được tin nhắn yêu cầu cài ứng dụng qua đường liên kết lạ. Em nên làm gì?', ['Cài ngay', 'Không cài, kiểm tra nguồn chính thức', 'Gửi cho bạn cài'], 1, 'Ứng dụng không rõ nguồn có thể chứa mã độc.'), ('Một tài khoản lạ yêu cầu cung cấp ngày sinh và địa chỉ để nhận học bổng?', ['Hỏi nhà trường qua kênh chính thức', 'Cung cấp ngay', 'Gửi ảnh giấy tờ'], 0, 'Cần xác minh chương trình học bổng trước khi chia sẻ dữ liệu.')]
 with tab2:
@@ -396,17 +400,100 @@ with tab4:
             st.write('**Lời khuyên:** ' + lesson)
     st.caption('Các tình huống dùng để luyện kỹ năng, không phải dữ liệu kiểm thử AI.')
 
+
+# Tư vấn theo quy tắc: không dùng mô hình phân loại tin lừa đảo để chẩn đoán
+# tình huống bạo lực, sức khỏe tâm thần hoặc nguy hiểm cá nhân.
+def advise_student_situation(message):
+    t = normalize(message)
+    def contains(*phrases):
+        return any(p in t for p in phrases)
+
+    # Ưu tiên phát hiện các dấu hiệu khẩn cấp trước mọi nhóm khác.
+    if contains('tu tu', 'tu sat', 'muon chet', 'ket lieu', 'tu lam dau', 'lam hai ban than', 'cat tay'):
+        return ('CẦN HỖ TRỢ NGAY', 'Em đang chia sẻ điều rất đáng quan tâm. Em không cần tự giải quyết một mình.', [
+            'Hãy đến ngay với cha mẹ, thầy cô hoặc người lớn đáng tin cậy và nói rõ em đang cần được giúp đỡ.',
+            'Nếu em có nguy cơ làm hại bản thân ngay lúc này, đừng ở một mình; hãy nhờ người lớn đưa đến cơ sở y tế hoặc gọi cấp cứu 115.',
+            'Nếu khó nói thành lời, em có thể cho người lớn xem nội dung em vừa viết.'
+        ])
+    if contains('bi xam hai', 'xam hai tinh duc', 'cuong hiep', 'ep quan he', 'so mo', 'dung cham vung kin'):
+        return ('CẦN HỖ TRỢ NGAY', 'Đây có thể là tình huống xâm hại nghiêm trọng.', [
+            'Rời khỏi người hoặc nơi khiến em không an toàn nếu có thể.',
+            'Báo ngay cho người lớn đáng tin cậy không liên quan đến hành vi xâm hại; em có thể gọi Tổng đài bảo vệ trẻ em 111.',
+            'Nếu đang nguy hiểm trực tiếp, hãy nhờ người lớn gọi 113 hoặc đến nơi có người hỗ trợ. Không tự đối chất.'
+        ])
+    if contains('de doa danh', 'doi danh', 'chan danh', 'bi danh', 'danh hoi dong', 'cam dao', 'dao de doa', 'bat coc', 'giet em', 'giet toi', 'danh sau gio hoc', 'ep di theo'):
+        return ('NGUY CƠ CAO', 'Có dấu hiệu đe dọa hoặc bạo lực. An toàn của em là ưu tiên hàng đầu.', [
+            'Không đi gặp người đe dọa một mình và không đáp trả bằng bạo lực.',
+            'Đến nơi an toàn, có thầy cô hoặc người lớn; báo ngay cho giáo viên chủ nhiệm và gia đình.',
+            'Giữ tin nhắn làm bằng chứng nếu an toàn. Nếu nguy hiểm đang xảy ra, nhờ người lớn gọi 113; trẻ em có thể gọi 111.'
+        ])
+    if contains('tong tien', 'doa tung anh', 'phat tan anh', 'anh nhay cam', 'anh rieng tu', 'quay clip', 'bi ep gui anh'):
+        return ('NGUY CƠ CAO', 'Có dấu hiệu đe dọa, ép buộc hoặc xâm phạm quyền riêng tư.', [
+            'Không gửi thêm ảnh, tiền hoặc thông tin riêng tư; không tự thương lượng một mình.',
+            'Lưu bằng chứng ở nơi an toàn, chặn và báo cáo tài khoản sau khi đã lưu bằng chứng.',
+            'Báo ngay cho cha mẹ, giáo viên hoặc người lớn đáng tin cậy; có thể gọi 111 để được hướng dẫn.'
+        ])
+    if contains('bat nat', 'co lap', 'tay chay', 'che gieu', 'noi xau', 'lang ma', 'xuc pham', 'chui boi', 'bi treu', 'bi choc'):
+        return ('CẦN QUAN TÂM', 'Có dấu hiệu bắt nạt hoặc gây tổn thương trong quan hệ bạn bè.', [
+            'Em không cần chịu đựng một mình. Hãy chia sẻ với giáo viên chủ nhiệm, cha mẹ hoặc người lớn đáng tin cậy.',
+            'Ghi lại sự việc và lưu tin nhắn nếu có; tránh đáp trả bằng xúc phạm hoặc bạo lực.',
+            'Nếu có đe dọa hoặc nguy cơ bị đánh, hãy ưu tiên đến nơi an toàn và báo ngay cho người lớn.'
+        ])
+    if contains('otp', 'mat khau', 'chuyen tien', 'trung thuong', 'hoc bong', 'link la', 'duong link', 'lua dao', 'tai khoan bi khoa', 'ma xac thuc'):
+        return ('CẦN XÁC MINH', 'Nội dung có thể liên quan đến nguy cơ lừa đảo hoặc lộ thông tin trên mạng.', [
+            'Không cung cấp mã OTP, mật khẩu, giấy tờ cá nhân hoặc chuyển tiền khi chưa xác minh.',
+            'Không bấm đường dẫn lạ. Hãy kiểm tra bằng kênh chính thức và hỏi thầy cô hoặc cha mẹ.',
+            'Em có thể dùng mục “Kiểm tra tin” để xem thêm các dấu hiệu lừa đảo; kết quả chỉ để tham khảo.'
+        ])
+    if contains('buon', 'lo lang', 'so hai', 'ap luc', 'stress', 'khong ai hieu', 'co don', 'mat ngu'):
+        return ('CẦN QUAN TÂM', 'Em có thể đang gặp chuyện khiến mình buồn hoặc lo lắng.', [
+            'Hãy chia sẻ cụ thể với cha mẹ, thầy cô, nhân viên tư vấn học đường hoặc người lớn em tin tưởng.',
+            'Nếu em thấy không an toàn hoặc có ý nghĩ làm hại bản thân, hãy tìm người lớn hỗ trợ ngay.',
+            'Ứng dụng không thể đánh giá tình trạng tâm lý hay thay thế người tư vấn chuyên môn.'
+        ])
+    return ('CHƯA ĐỦ THÔNG TIN', 'Ứng dụng chưa nhận diện chắc chắn tình huống của em; điều này không có nghĩa là an toàn.', [
+        'Hãy nói rõ sự việc với thầy cô, cha mẹ hoặc người lớn đáng tin cậy để được hỗ trợ phù hợp.',
+        'Không đưa thông tin cá nhân thật lên ứng dụng. Nếu có đe dọa hoặc nguy hiểm, hãy tìm sự trợ giúp ngay.',
+        'Ứng dụng hiện chỉ tư vấn theo các nhóm dấu hiệu đã lập trình, chưa hiểu được mọi cách diễn đạt.'
+    ])
+
+with tab6:
+    st.subheader('💬 Góc chia sẻ – Tình huống của em')
+    st.write('Em có thể tự viết tình huống đang băn khoăn để nhận hướng dẫn an toàn ban đầu.')
+    st.warning('Không nhập họ tên thật, số điện thoại, địa chỉ, tên trường/lớp, mật khẩu, OTP hoặc thông tin nhận dạng người khác. Không gửi ảnh riêng tư. Nội dung có thể được xử lý trên máy chủ của ứng dụng.')
+    with st.form('student_free_situation_form'):
+        student_story = st.text_area('Em muốn chia sẻ điều gì?', height=155, max_chars=1500,
+            placeholder='Ví dụ: Có bạn nhắn sẽ chặn đánh em sau giờ học nếu em nói với cô giáo...')
+        ask = st.form_submit_button('🛡️ NHẬN HƯỚNG DẪN', type='primary')
+    if ask:
+        if len(student_story.strip()) < 12:
+            st.warning('Em hãy mô tả rõ hơn một chút (ít nhất 12 ký tự), không cần nêu tên thật nhé.')
+        else:
+            level, explanation, steps = advise_student_situation(student_story)
+            if level in ('CẦN HỖ TRỢ NGAY', 'NGUY CƠ CAO'):
+                st.error('🚨 ' + level)
+            elif level == 'CHƯA ĐỦ THÔNG TIN':
+                st.info('ℹ️ ' + level)
+            else:
+                st.warning('⚠️ ' + level)
+            st.write('**Nhận định ban đầu:** ' + explanation)
+            st.markdown('#### Em nên làm gì?')
+            for index, step in enumerate(steps, 1):
+                st.write(f'{index}. {step}')
+            st.caption('Đây là hướng dẫn theo quy tắc, không phải tư vấn trực tiếp của chuyên gia và không bảo đảm phát hiện mọi nguy cơ. 111: Tổng đài bảo vệ trẻ em; 113: Công an; 115: Cấp cứu y tế (Việt Nam).')
+
 with tab5:
-    st.subheader('ℹ️ Giới thiệu SCHOOLGUARD AI')
+  st.subheader('ℹ️ Giới thiệu phần mềm')
     st.write('**Mục tiêu:** Giúp học sinh THCS nhận diện dấu hiệu lừa đảo và luyện kỹ năng ứng xử an toàn trên mạng.')
     st.markdown('**Các hoạt động chính**')
     st.write('🔎 **Kiểm tra tin:** Nhận cảnh báo và hướng dẫn xác minh tin nhắn.')
     st.write('🎮 **Thử thách:** Mỗi lượt trả lời 10 câu hỏi từ ngân hàng 34 câu.')
     st.write('🕵️ **Thám tử tin nhắn:** Nhận định 10 tin nhắn và giải thích lựa chọn.')
     st.write('🎭 **Góc tình huống:** Luyện cách xử lý 20 tình huống an toàn số.')
+    st.write('💬 **Góc chia sẻ:** Học sinh tự nhập tình huống và nhận hướng dẫn ban đầu theo quy tắc, không phải chatbot AI tạo sinh.')
     st.markdown('**Công nghệ và giới hạn**')
     st.write('Phần mềm sử dụng Python, Streamlit và mô hình TF-IDF kết hợp Logistic Regression cùng các quy tắc nhận diện.')
     st.warning('Kết quả chỉ để tham khảo. Dữ liệu huấn luyện còn ít và chủ yếu là tình huống giả lập; phần mềm có thể cảnh báo nhầm hoặc bỏ sót nguy cơ. Không dùng kết quả để kết luận chắc chắn một tin nhắn an toàn.')
     st.write('**Kiểm thử:** Bộ số 4 đã được dùng trong quá trình điều chỉnh nên không phải kiểm thử độc lập. Bộ số 5 gồm các tình huống giả lập mới; kết quả chưa phản ánh độ chính xác ngoài thực tế. Tài liệu kiểm thử được lưu riêng để phục vụ nghiên cứu.')
     st.write('**Quyền riêng tư:** Không nhập mật khẩu, mã xác thực OTP hay thông tin cá nhân thật. Bản chạy cục bộ không chủ động gửi tin nhắn đến dịch vụ AI bên ngoài.')
-    st.caption('SCHOOLGUARD AI 3.8 • Nguyên mẫu giáo dục và nghiên cứu; không thay thế việc xác minh thực tế.')
+  st.caption('Phần mềm hỗ trợ giáo dục và nghiên cứu; không thay thế việc xác minh thực tế hoặc sự hỗ trợ của thầy cô, cha mẹ.')
