@@ -423,6 +423,44 @@ def advise_student_situation(message):
             'Báo ngay cho người lớn đáng tin cậy không liên quan đến hành vi xâm hại; em có thể gọi Tổng đài bảo vệ trẻ em 111.',
             'Nếu đang nguy hiểm trực tiếp, hãy nhờ người lớn gọi 113 hoặc đến nơi có người hỗ trợ. Không tự đối chất.'
         ])
+    # Nhận diện dụ dỗ trực tuyến: kết hợp ngữ cảnh, không chỉ một từ khóa.
+    online_person = contains('qua game', 'qua tro choi', 'choi game', 'tren game',
+        'quen tren mang', 'quen qua mang', 'nguoi quen tren mang', 'nguoi quen qua mang',
+        'nguoi la tren mang', 'ban tren mang', 'ban qua mang', 'nguoi la',
+        'chua gap ngoai doi', 'chua tung gap', 'moi quen online')
+    meet_request = contains('ru em den', 'ru em toi', 'ru em di', 'ru toi den',
+        'hen gap', 'gap mat', 'den nha', 'toi nha', 'qua nha', 'di choi',
+        'di theo', 'ru den nha', 'ru toi nha', 'moi den nha', 'moi toi nha',
+        'ru em qua', 'ru em sang')
+    secrecy = contains('giau bo me', 'giau cha me', 'giau gia dinh', 'khong duoc ke',
+        'khong duoc noi', 'khong duoc bao', 'dung noi voi', 'dung ke voi',
+        'khong cho bo me biet', 'khong cho cha me biet', 'khong cho ai biet',
+        'giu bi mat', 'khong de bo me biet', 'khong de cha me biet')
+    gifts = contains('tang dien thoai', 'tang qua', 'cho dien thoai', 'cho qua',
+        'hua tang', 'se tang', 'dien thoai moi', 'qua dat tien', 'nap the',
+        'vat pham game', 'tang iphone')
+    if (online_person and meet_request and (secrecy or gifts)) or (meet_request and secrecy and gifts):
+        return ('NGUY CƠ CAO',
+            'Có dấu hiệu dụ dỗ gặp mặt không an toàn: người quen qua mạng hoặc lời hứa tặng quà đi kèm yêu cầu giữ bí mật. Chưa thể xác minh danh tính hay ý định người đó.', [
+            'Không đến điểm hẹn, không đi theo hoặc gặp riêng người này, kể cả khi họ hứa tặng quà.',
+            'Nói ngay với cha mẹ, giáo viên chủ nhiệm hoặc người lớn đáng tin cậy; cho họ xem tin nhắn để cùng xử lý.',
+            'Không gửi địa chỉ, vị trí, lịch học, hình ảnh riêng tư hoặc thông tin cá nhân; không nhận quà để đổi lấy việc giữ bí mật.',
+            'Nếu an toàn, giữ lại tin nhắn và tài khoản làm bằng chứng; nhờ người lớn hỗ trợ chặn hoặc báo cáo tài khoản.',
+            'Nếu người đó tìm đến, theo dõi hoặc đe dọa, đến nơi có người lớn hỗ trợ ngay; gọi 113 khi nguy hiểm trực tiếp, hoặc 111 để được tư vấn bảo vệ trẻ em.'
+        ])
+    if online_person and meet_request:
+        return ('CẦN XÁC MINH', 'Lời mời gặp mặt từ người chỉ quen trên mạng cần được kiểm tra với người lớn trước; không thể xác minh người đó qua lời kể.', [
+            'Không tự đi gặp người chỉ quen trên mạng hoặc cung cấp địa chỉ, lịch trình cá nhân.',
+            'Nói với cha mẹ hoặc thầy cô và nhờ họ kiểm tra, hỗ trợ quyết định.',
+            'Nếu người đó yêu cầu giấu gia đình, dụ bằng quà hoặc gây áp lực, ngừng liên hệ và báo ngay cho người lớn.'
+        ])
+    if meet_request and secrecy:
+        return ('NGUY CƠ CAO', 'Lời mời đi gặp kèm yêu cầu giấu người lớn là dấu hiệu đáng lo ngại; cần ưu tiên an toàn.', [
+            'Không đi gặp riêng hoặc giữ bí mật cuộc hẹn với người lớn.',
+            'Báo ngay cho cha mẹ hoặc giáo viên đáng tin cậy và cho họ xem lời nhắn.',
+            'Không chia sẻ địa chỉ, vị trí hoặc lịch trình; tìm nơi an toàn nếu bị ép buộc.'
+        ])
+
     # Phân loại nguy cơ cao trước bắt nạt thông thường; hỗ trợ nhiều cách diễn đạt.
     violence_phrases = (
         'de doa danh', 'doa danh', 'se danh', 'danh em', 'danh toi', 'danh no',
@@ -563,7 +601,7 @@ with tab6:
 
 with tab5:
     st.subheader('ℹ️ Giới thiệu phần mềm')
-    st.caption('Phiên bản 4.3 – Bổ sung phân biệt tình huống bình thường và nguy cơ')
+    st.caption('Phiên bản 4.4 – Bổ sung cảnh báo dụ dỗ gặp mặt và kiểm thử tình huống')
     st.write('**Mục tiêu:** Giúp học sinh THCS nhận diện dấu hiệu lừa đảo và luyện kỹ năng ứng xử an toàn trên mạng.')
     st.markdown('**Các hoạt động chính**')
     st.write('🔎 **Kiểm tra tin:** Nhận cảnh báo và hướng dẫn xác minh tin nhắn.')
