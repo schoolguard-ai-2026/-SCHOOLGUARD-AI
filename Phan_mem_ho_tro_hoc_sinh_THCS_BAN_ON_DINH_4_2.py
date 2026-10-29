@@ -506,6 +506,30 @@ def advise_student_situation(message):
             'Nếu em thấy không an toàn hoặc có ý nghĩ làm hại bản thân, hãy tìm người lớn hỗ trợ ngay.',
             'Ứng dụng không thể đánh giá tình trạng tâm lý hay thay thế người tư vấn chuyên môn.'
         ])
+    # Nhóm tích cực: chỉ xét sau khi đã loại trừ các dấu hiệu nguy cơ ở trên.
+    # Không coi một lời mời học nhóm thông thường là dấu hiệu đe dọa.
+    study_invite = contains('hoc nhom', 'cung hoc', 'on bai chung', 'ru em hoc', 'ru toi hoc', 'lam bai tap chung')
+    friendly_context = contains('ban', 'ban hoc', 'ban cung lop', 'ban than', 'co giao', 'thay giao', 'chuc mung', 'duoc khen')
+    unknown_contact = contains('nguoi la', 'nguoi moi quen tren mang', 'khong quen', 'chua tung gap', 'nguoi quen qua mang', 'tai khoan la')
+    suspicious_invite = contains('mot minh', 'noi vang', 'khach san', 'nha nghi', 'giau bo me', 'khong cho ai biet', 'sau nua dem', 'chuyen tien', 'gui anh')
+    if study_invite and friendly_context and not unknown_contact and not suspicious_invite:
+        return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Đây có vẻ là lời mời học nhóm tích cực, chưa thấy dấu hiệu nguy hiểm trong thông tin em cung cấp.', [
+            'Em có thể đồng ý nếu biết rõ người bạn và cảm thấy thoải mái; em cũng có quyền từ chối nếu không muốn.',
+            'Thống nhất thời gian và địa điểm học phù hợp, ưu tiên trường học, thư viện hoặc nơi quen thuộc; báo cho gia đình khi cần.',
+            'Nếu lời mời thay đổi bất thường, có yêu cầu giữ bí mật hoặc khiến em không an tâm, hãy hỏi người lớn đáng tin cậy trước.'
+        ])
+    if contains('duoc khen', 'diem tot', 'diem cao', 'chuc mung', 'giup do ban', 'lam viec tot', 'tham gia cau lac bo') and not unknown_contact and not suspicious_invite:
+        return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Em đang kể về một trải nghiệm học tập hoặc quan hệ bạn bè tích cực; chưa thấy dấu hiệu nguy hiểm trong mô tả.', [
+            'Em có thể vui vẻ đón nhận lời khen và tiếp tục phát huy những việc làm tích cực.',
+            'Trao đổi lịch sự, tôn trọng sự tự nguyện của mình và của bạn bè.',
+            'Nếu xuất hiện điều khiến em khó chịu hoặc không an toàn, hãy chia sẻ với người lớn đáng tin cậy.'
+        ])
+    if study_invite and unknown_contact:
+        return ('CẦN XÁC MINH', 'Lời mời học nhóm đến từ người chưa quen rõ ngoài đời; cần xác minh trước khi gặp mặt.', [
+            'Không hẹn gặp riêng người mới quen qua mạng và không chia sẻ địa chỉ, lịch trình hay thông tin cá nhân.',
+            'Hỏi cha mẹ hoặc thầy cô; nếu thực sự cần học nhóm, ưu tiên nhóm có bạn học quen biết và địa điểm công khai.',
+            'Nếu người đó thúc ép giữ bí mật, gửi ảnh hoặc chuyển tiền, hãy dừng liên hệ và báo người lớn.'
+        ])
     return ('CHƯA ĐỦ THÔNG TIN', 'Ứng dụng chưa nhận diện chắc chắn tình huống của em; điều này không có nghĩa là an toàn.', [
         'Hãy nói rõ sự việc với thầy cô, cha mẹ hoặc người lớn đáng tin cậy để được hỗ trợ phù hợp.',
         'Không đưa thông tin cá nhân thật lên ứng dụng. Nếu có đe dọa hoặc nguy hiểm, hãy tìm sự trợ giúp ngay.',
@@ -527,7 +551,7 @@ with tab6:
             level, explanation, steps = advise_student_situation(student_story)
             if level in ('CẦN HỖ TRỢ NGAY', 'NGUY CƠ CAO'):
                 st.error('🚨 ' + level)
-            elif level == 'CHƯA ĐỦ THÔNG TIN':
+            elif level in ('CHƯA ĐỦ THÔNG TIN', 'TÌNH HUỐNG BÌNH THƯỜNG'):
                 st.info('ℹ️ ' + level)
             else:
                 st.warning('⚠️ ' + level)
@@ -539,7 +563,7 @@ with tab6:
 
 with tab5:
     st.subheader('ℹ️ Giới thiệu phần mềm')
-    st.caption('Phiên bản 4.2 – Bản kiểm tra cú pháp và bộ tình huống theo quy tắc')
+    st.caption('Phiên bản 4.3 – Bổ sung phân biệt tình huống bình thường và nguy cơ')
     st.write('**Mục tiêu:** Giúp học sinh THCS nhận diện dấu hiệu lừa đảo và luyện kỹ năng ứng xử an toàn trên mạng.')
     st.markdown('**Các hoạt động chính**')
     st.write('🔎 **Kiểm tra tin:** Nhận cảnh báo và hướng dẫn xác minh tin nhắn.')
