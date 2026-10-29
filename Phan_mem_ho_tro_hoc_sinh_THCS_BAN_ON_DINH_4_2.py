@@ -423,23 +423,46 @@ def advise_student_situation(message):
             'Báo ngay cho người lớn đáng tin cậy không liên quan đến hành vi xâm hại; em có thể gọi Tổng đài bảo vệ trẻ em 111.',
             'Nếu đang nguy hiểm trực tiếp, hãy nhờ người lớn gọi 113 hoặc đến nơi có người hỗ trợ. Không tự đối chất.'
         ])
+    # 4.5: Dấu hiệu bổ sung từ ngân hàng tình huống THCS.
+    # Các điều kiện có tính kết hợp để giảm cảnh báo nhầm.
+    if contains('ep len xe', 'bi ep len xe', 'keu cuu', 'cau cuu') and contains('xe', 'bat', 'theo', 'cuu'):
+        return ('CẦN HỖ TRỢ NGAY', 'Có dấu hiệu nguy hiểm trực tiếp, cần hỗ trợ khẩn cấp.', [
+            'Báo ngay người lớn ở gần và gọi công an 113 nếu có nguy hiểm trực tiếp.',
+            'Cung cấp vị trí và thông tin đang có; không tự đi giải cứu hay đối đầu.',
+            'Trẻ em có thể liên hệ tổng đài 111 để được hỗ trợ.'])
+    if contains('ghep mat', 'ghep anh', 'deepfake', 'anh gia') and contains('nhay cam', 'khoa than', 'phat tan', 'dang len mang', 'dang facebook'):
+        return ('NGUY CƠ CAO', 'Có dấu hiệu tạo hoặc phát tán hình ảnh xâm phạm quyền riêng tư.', [
+            'Không chia sẻ hoặc phát tán hình ảnh.', 'Giữ lại liên kết, tài khoản và tin nhắn làm bằng chứng, tránh lưu hoặc gửi lại ảnh nhạy cảm.',
+            'Báo ngay người lớn đáng tin cậy để được hỗ trợ báo cáo nội dung và bảo vệ bản thân.'])
+    if contains('thu thach nguy hiem', 'thu thach tren mang', 'quay clip lam theo'):
+        return ('NGUY CƠ CAO', 'Lời rủ thực hiện thử thách nguy hiểm có thể gây tổn hại.', [
+            'Không làm theo hoặc rủ bạn bè tham gia.', 'Báo người lớn và báo cáo nội dung trên nền tảng.'])
+    if contains('nguoi la', 'nguoi moi quen', 'nguoi tren mang', 'ban tren mang') and contains('dia chi nha', 'o nha mot minh', 'gio o nha mot minh'):
+        return ('NGUY CƠ CAO', 'Người chưa được xác minh hỏi thông tin vị trí hoặc lịch sinh hoạt riêng tư.', [
+            'Không cung cấp địa chỉ, vị trí hoặc thời gian ở nhà một mình.', 'Ngừng trao đổi và báo cha mẹ hoặc thầy cô đáng tin cậy.'])
+    if contains('nguoi la', 'nguoi moi quen', 'tren mang', 'qua game') and contains('mat khau', 'ma otp', 'ma xac thuc') and contains('gui', 'dua', 'doc', 'cung cap', 'xin'):
+        return ('NGUY CƠ CAO', 'Có dấu hiệu yêu cầu tiết lộ thông tin bảo mật.', [
+            'Không cung cấp mật khẩu hoặc mã xác thực.', 'Ngừng trao đổi, báo người lớn và dùng kênh chính thức để kiểm tra tài khoản.'])
+    if contains('ban cung lop', 'ban trong lop', 'nhom lop') and contains('thu vien', 'hoc nhom') and not contains('giau bo me', 'giau gia dinh', 'khong cho gia dinh biet', 'khong cho bo me biet', 'khong cho cha me biet', 'khong duoc ke'):
+        return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Lời mời học nhóm thông thường, chưa thấy dấu hiệu nguy hiểm rõ ràng.', [
+            'Có thể tham gia nếu em thấy thoải mái, biết rõ địa điểm và lịch trình.', 'Thông báo cho gia đình và tuân thủ quy định nhà trường.'])
     # Nhận diện dụ dỗ trực tuyến: kết hợp ngữ cảnh, không chỉ một từ khóa.
     online_person = contains('qua game', 'qua tro choi', 'choi game', 'tren game',
         'quen tren mang', 'quen qua mang', 'nguoi quen tren mang', 'nguoi quen qua mang',
         'nguoi la tren mang', 'ban tren mang', 'ban qua mang', 'nguoi la',
-        'chua gap ngoai doi', 'chua tung gap', 'moi quen online')
+        'chua gap ngoai doi', 'chua tung gap', 'moi quen online', 'quen 1 ban tren mang', 'quen mot ban tren mang', 'quen ban trai tren mang', 'quen qua facebook', 'quen qua tiktok')
     meet_request = contains('ru em den', 'ru em toi', 'ru em di', 'ru toi den',
         'hen gap', 'gap mat', 'den nha', 'toi nha', 'qua nha', 'di choi',
         'di theo', 'ru den nha', 'ru toi nha', 'moi den nha', 'moi toi nha',
-        'ru em qua', 'ru em sang')
+        'ru em qua', 'ru em sang', 'ru em di gap', 'ru di gap', 'di gap cung', 'di gap voi', 'di gap nguoi', 'ru di gap')
     secrecy = contains('giau bo me', 'giau cha me', 'giau gia dinh', 'khong duoc ke',
         'khong duoc noi', 'khong duoc bao', 'dung noi voi', 'dung ke voi',
-        'khong cho bo me biet', 'khong cho cha me biet', 'khong cho ai biet',
+        'khong cho bo me biet', 'khong cho cha me biet', 'khong cho ai biet', 'khong cho gia dinh biet', 'khong cho nha biet', 'dung cho gia dinh biet',
         'giu bi mat', 'khong de bo me biet', 'khong de cha me biet')
     gifts = contains('tang dien thoai', 'tang qua', 'cho dien thoai', 'cho qua',
         'hua tang', 'se tang', 'dien thoai moi', 'qua dat tien', 'nap the',
         'vat pham game', 'tang iphone')
-    if (online_person and meet_request and (secrecy or gifts)) or (meet_request and secrecy and gifts):
+    if (online_person and meet_request and (secrecy or gifts)) or (meet_request and secrecy and gifts) or (meet_request and secrecy and contains('ban trai', 'ban gai', 'tren mang', 'online')):
         return ('NGUY CƠ CAO',
             'Có dấu hiệu dụ dỗ gặp mặt không an toàn: người quen qua mạng hoặc lời hứa tặng quà đi kèm yêu cầu giữ bí mật. Chưa thể xác minh danh tính hay ý định người đó.', [
             'Không đến điểm hẹn, không đi theo hoặc gặp riêng người này, kể cả khi họ hứa tặng quà.',
