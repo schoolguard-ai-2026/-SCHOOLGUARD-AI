@@ -483,7 +483,7 @@ with tab6:
             st.caption('Đây là hướng dẫn theo quy tắc, không phải tư vấn trực tiếp của chuyên gia và không bảo đảm phát hiện mọi nguy cơ. 111: Tổng đài bảo vệ trẻ em; 113: Công an; 115: Cấp cứu y tế (Việt Nam).')
 
 with tab5:
-  st.subheader('ℹ️ Giới thiệu phần mềm')
+    st.subheader('ℹ️ Giới thiệu phần mềm')
     st.write('**Mục tiêu:** Giúp học sinh THCS nhận diện dấu hiệu lừa đảo và luyện kỹ năng ứng xử an toàn trên mạng.')
     st.markdown('**Các hoạt động chính**')
     st.write('🔎 **Kiểm tra tin:** Nhận cảnh báo và hướng dẫn xác minh tin nhắn.')
@@ -496,4 +496,4 @@ with tab5:
     st.warning('Kết quả chỉ để tham khảo. Dữ liệu huấn luyện còn ít và chủ yếu là tình huống giả lập; phần mềm có thể cảnh báo nhầm hoặc bỏ sót nguy cơ. Không dùng kết quả để kết luận chắc chắn một tin nhắn an toàn.')
     st.write('**Kiểm thử:** Bộ số 4 đã được dùng trong quá trình điều chỉnh nên không phải kiểm thử độc lập. Bộ số 5 gồm các tình huống giả lập mới; kết quả chưa phản ánh độ chính xác ngoài thực tế. Tài liệu kiểm thử được lưu riêng để phục vụ nghiên cứu.')
     st.write('**Quyền riêng tư:** Không nhập mật khẩu, mã xác thực OTP hay thông tin cá nhân thật. Bản chạy cục bộ không chủ động gửi tin nhắn đến dịch vụ AI bên ngoài.')
-  st.caption('Phần mềm hỗ trợ giáo dục và nghiên cứu; không thay thế việc xác minh thực tế hoặc sự hỗ trợ của thầy cô, cha mẹ.')
+    st.caption('Phần mềm hỗ trợ giáo dục và nghiên cứu; không thay thế việc xác minh thực tế hoặc sự hỗ trợ của thầy cô, cha mẹ.')
