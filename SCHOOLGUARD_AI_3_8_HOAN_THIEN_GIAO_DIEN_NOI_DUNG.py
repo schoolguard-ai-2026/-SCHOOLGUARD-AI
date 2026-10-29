@@ -405,6 +405,8 @@ with tab4:
 # tình huống bạo lực, sức khỏe tâm thần hoặc nguy hiểm cá nhân.
 def advise_student_situation(message):
     t = normalize(message)
+    # Gom khoảng trắng để nhận diện cả khi học sinh xuống dòng hoặc gõ nhiều dấu cách.
+    t = ' '.join(t.split())
     def contains(*phrases):
         return any(p in t for p in phrases)
 
@@ -421,22 +423,88 @@ def advise_student_situation(message):
             'Báo ngay cho người lớn đáng tin cậy không liên quan đến hành vi xâm hại; em có thể gọi Tổng đài bảo vệ trẻ em 111.',
             'Nếu đang nguy hiểm trực tiếp, hãy nhờ người lớn gọi 113 hoặc đến nơi có người hỗ trợ. Không tự đối chất.'
         ])
-    if contains('de doa danh', 'doi danh', 'chan danh', 'bi danh', 'danh hoi dong', 'cam dao', 'dao de doa', 'bat coc', 'giet em', 'giet toi', 'danh sau gio hoc', 'ep di theo'):
-        return ('NGUY CƠ CAO', 'Có dấu hiệu đe dọa hoặc bạo lực. An toàn của em là ưu tiên hàng đầu.', [
-            'Không đi gặp người đe dọa một mình và không đáp trả bằng bạo lực.',
-            'Đến nơi an toàn, có thầy cô hoặc người lớn; báo ngay cho giáo viên chủ nhiệm và gia đình.',
-            'Giữ tin nhắn làm bằng chứng nếu an toàn. Nếu nguy hiểm đang xảy ra, nhờ người lớn gọi 113; trẻ em có thể gọi 111.'
+    # Nhận diện dụ dỗ trực tuyến: kết hợp ngữ cảnh, không chỉ một từ khóa.
+    online_person = contains('qua game', 'qua tro choi', 'choi game', 'tren game',
+        'quen tren mang', 'quen qua mang', 'nguoi quen tren mang', 'nguoi quen qua mang',
+        'nguoi la tren mang', 'ban tren mang', 'ban qua mang', 'nguoi la',
+        'chua gap ngoai doi', 'chua tung gap', 'moi quen online')
+    meet_request = contains('ru em den', 'ru em toi', 'ru em di', 'ru toi den',
+        'hen gap', 'gap mat', 'den nha', 'toi nha', 'qua nha', 'di choi',
+        'di theo', 'ru den nha', 'ru toi nha', 'moi den nha', 'moi toi nha',
+        'ru em qua', 'ru em sang')
+    secrecy = contains('giau bo me', 'giau cha me', 'giau gia dinh', 'khong duoc ke',
+        'khong duoc noi', 'khong duoc bao', 'dung noi voi', 'dung ke voi',
+        'khong cho bo me biet', 'khong cho cha me biet', 'khong cho ai biet',
+        'giu bi mat', 'khong de bo me biet', 'khong de cha me biet')
+    gifts = contains('tang dien thoai', 'tang qua', 'cho dien thoai', 'cho qua',
+        'hua tang', 'se tang', 'dien thoai moi', 'qua dat tien', 'nap the',
+        'vat pham game', 'tang iphone')
+    if (online_person and meet_request and (secrecy or gifts)) or (meet_request and secrecy and gifts):
+        return ('NGUY CƠ CAO',
+            'Có dấu hiệu dụ dỗ gặp mặt không an toàn: người quen qua mạng hoặc lời hứa tặng quà đi kèm yêu cầu giữ bí mật. Chưa thể xác minh danh tính hay ý định người đó.', [
+            'Không đến điểm hẹn, không đi theo hoặc gặp riêng người này, kể cả khi họ hứa tặng quà.',
+            'Nói ngay với cha mẹ, giáo viên chủ nhiệm hoặc người lớn đáng tin cậy; cho họ xem tin nhắn để cùng xử lý.',
+            'Không gửi địa chỉ, vị trí, lịch học, hình ảnh riêng tư hoặc thông tin cá nhân; không nhận quà để đổi lấy việc giữ bí mật.',
+            'Nếu an toàn, giữ lại tin nhắn và tài khoản làm bằng chứng; nhờ người lớn hỗ trợ chặn hoặc báo cáo tài khoản.',
+            'Nếu người đó tìm đến, theo dõi hoặc đe dọa, đến nơi có người lớn hỗ trợ ngay; gọi 113 khi nguy hiểm trực tiếp, hoặc 111 để được tư vấn bảo vệ trẻ em.'
         ])
-    if contains('tong tien', 'doa tung anh', 'phat tan anh', 'anh nhay cam', 'anh rieng tu', 'quay clip', 'bi ep gui anh'):
+    if online_person and meet_request:
+        return ('CẦN XÁC MINH', 'Lời mời gặp mặt từ người chỉ quen trên mạng cần được kiểm tra với người lớn trước; không thể xác minh người đó qua lời kể.', [
+            'Không tự đi gặp người chỉ quen trên mạng hoặc cung cấp địa chỉ, lịch trình cá nhân.',
+            'Nói với cha mẹ hoặc thầy cô và nhờ họ kiểm tra, hỗ trợ quyết định.',
+            'Nếu người đó yêu cầu giấu gia đình, dụ bằng quà hoặc gây áp lực, ngừng liên hệ và báo ngay cho người lớn.'
+        ])
+    if meet_request and secrecy:
+        return ('NGUY CƠ CAO', 'Lời mời đi gặp kèm yêu cầu giấu người lớn là dấu hiệu đáng lo ngại; cần ưu tiên an toàn.', [
+            'Không đi gặp riêng hoặc giữ bí mật cuộc hẹn với người lớn.',
+            'Báo ngay cho cha mẹ hoặc giáo viên đáng tin cậy và cho họ xem lời nhắn.',
+            'Không chia sẻ địa chỉ, vị trí hoặc lịch trình; tìm nơi an toàn nếu bị ép buộc.'
+        ])
+
+    # Phân loại nguy cơ cao trước bắt nạt thông thường; hỗ trợ nhiều cách diễn đạt.
+    violence_phrases = (
+        'de doa danh', 'doa danh', 'se danh', 'danh em', 'danh toi', 'danh no',
+        'doi danh', 'chan danh', 'bi danh', 'danh hoi dong', 'cam dao',
+        'dao de doa', 'bat coc', 'giet em', 'giet toi', 'danh sau gio hoc',
+        'ep di theo', 'cho danh', 'hen danh', 'xu em', 'xu toi',
+        'danh chet', 'dap em', 'danh vo mat', 'doi o cong truong',
+        'chan duong danh', 'cam gay danh', 'doa giet', 'se giet',
+        'danh cho mot tran', 'tim em de danh', 'danh sau tan hoc',
+        'khong duoc mach', 'neu mach co', 'neu noi voi co', 'danh neu'
+    )
+    if contains(*violence_phrases) or (
+        contains('de doa', 'doa nat', 'uy hiep') and
+        contains('danh', 'bao luc', 'giet', 'chan duong', 'sau gio hoc')
+    ):
+        online_harassment = contains('facebook', 'dang anh', 'lay anh', 'che gieu', 'mang xa hoi', 'tiktok', 'phat tan', 'dang bai')
+        explanation = ('Có dấu hiệu đe dọa bạo lực' +
+            (' kết hợp bắt nạt hoặc đăng hình ảnh trên mạng' if online_harassment else '') +
+            '. An toàn của em cần được ưu tiên; ứng dụng không thể xác minh mức độ nguy hiểm thực tế.')
+        steps = [
+            'Không gặp riêng hoặc tự đối chất với người đe dọa; tránh đi một mình, nhất là sau giờ học.',
+            'Báo ngay cho cha mẹ, giáo viên chủ nhiệm hoặc người lớn đáng tin cậy; nhờ người lớn giúp em có nơi an toàn và phương án đi lại.',
+            'Nếu an toàn, lưu tin nhắn, ảnh chụp màn hình, thời gian và đường dẫn bài đăng làm bằng chứng; không chia sẻ lại hình ảnh gây tổn thương.',
+        ]
+        if online_harassment:
+            steps.append('Nhờ người lớn hỗ trợ báo cáo bài đăng hoặc tài khoản vi phạm trên nền tảng; không bình luận đối đầu hay lan truyền bài đăng.')
+        steps.append('Nếu đang có nguy hiểm trực tiếp, đến nơi có người hỗ trợ và gọi 113; trẻ em có thể gọi 111 để được tư vấn, bảo vệ.')
+        return ('NGUY CƠ CAO', explanation, steps)
+    if contains('tong tien', 'doa tung anh', 'phat tan anh', 'anh nhay cam', 'anh rieng tu', 'quay clip', 'bi ep gui anh', 'doa dang anh', 'doa dua anh len mang', 'ep gui hinh', 'ep gui clip'):
         return ('NGUY CƠ CAO', 'Có dấu hiệu đe dọa, ép buộc hoặc xâm phạm quyền riêng tư.', [
             'Không gửi thêm ảnh, tiền hoặc thông tin riêng tư; không tự thương lượng một mình.',
             'Lưu bằng chứng ở nơi an toàn, chặn và báo cáo tài khoản sau khi đã lưu bằng chứng.',
             'Báo ngay cho cha mẹ, giáo viên hoặc người lớn đáng tin cậy; có thể gọi 111 để được hướng dẫn.'
         ])
+    if contains('ep gui anh nhay cam', 'ep gui anh khoa than', 'doi anh nong', 'doa tung clip', 'doa tung hinh', 'ep quay clip', 'ep chup anh nhay cam'):
+        return ('NGUY CƠ CAO', 'Có dấu hiệu ép buộc hoặc đe dọa liên quan đến hình ảnh riêng tư.', [
+            'Không gửi thêm ảnh, clip, tiền hoặc thông tin cá nhân; không gặp riêng hay tự thương lượng với người đe dọa.',
+            'Lưu bằng chứng tin nhắn và tài khoản ở nơi an toàn, nhưng không phát tán hình ảnh nhạy cảm.',
+            'Báo ngay cho người lớn đáng tin cậy; trẻ em có thể gọi 111. Nếu nguy hiểm trực tiếp, gọi 113.'
+        ])
     if contains('bat nat', 'co lap', 'tay chay', 'che gieu', 'noi xau', 'lang ma', 'xuc pham', 'chui boi', 'bi treu', 'bi choc'):
         return ('CẦN QUAN TÂM', 'Có dấu hiệu bắt nạt hoặc gây tổn thương trong quan hệ bạn bè.', [
             'Em không cần chịu đựng một mình. Hãy chia sẻ với giáo viên chủ nhiệm, cha mẹ hoặc người lớn đáng tin cậy.',
-            'Ghi lại sự việc và lưu tin nhắn nếu có; tránh đáp trả bằng xúc phạm hoặc bạo lực.',
+            'Ghi lại sự việc, lưu tin nhắn hoặc đường dẫn bài đăng nếu có; nhờ người lớn hỗ trợ báo cáo nội dung vi phạm, tránh đáp trả bằng xúc phạm hoặc bạo lực.',
             'Nếu có đe dọa hoặc nguy cơ bị đánh, hãy ưu tiên đến nơi an toàn và báo ngay cho người lớn.'
         ])
     # Cuộc gọi lạ, im lặng, gọi liên tục: không tự kết luận là lừa đảo.
@@ -476,6 +544,30 @@ def advise_student_situation(message):
             'Nếu em thấy không an toàn hoặc có ý nghĩ làm hại bản thân, hãy tìm người lớn hỗ trợ ngay.',
             'Ứng dụng không thể đánh giá tình trạng tâm lý hay thay thế người tư vấn chuyên môn.'
         ])
+    # Nhóm tích cực: chỉ xét sau khi đã loại trừ các dấu hiệu nguy cơ ở trên.
+    # Không coi một lời mời học nhóm thông thường là dấu hiệu đe dọa.
+    study_invite = contains('hoc nhom', 'cung hoc', 'on bai chung', 'ru em hoc', 'ru toi hoc', 'lam bai tap chung')
+    friendly_context = contains('ban', 'ban hoc', 'ban cung lop', 'ban than', 'co giao', 'thay giao', 'chuc mung', 'duoc khen')
+    unknown_contact = contains('nguoi la', 'nguoi moi quen tren mang', 'khong quen', 'chua tung gap', 'nguoi quen qua mang', 'tai khoan la')
+    suspicious_invite = contains('mot minh', 'noi vang', 'khach san', 'nha nghi', 'giau bo me', 'khong cho ai biet', 'sau nua dem', 'chuyen tien', 'gui anh')
+    if study_invite and friendly_context and not unknown_contact and not suspicious_invite:
+        return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Đây có vẻ là lời mời học nhóm tích cực, chưa thấy dấu hiệu nguy hiểm trong thông tin em cung cấp.', [
+            'Em có thể đồng ý nếu biết rõ người bạn và cảm thấy thoải mái; em cũng có quyền từ chối nếu không muốn.',
+            'Thống nhất thời gian và địa điểm học phù hợp, ưu tiên trường học, thư viện hoặc nơi quen thuộc; báo cho gia đình khi cần.',
+            'Nếu lời mời thay đổi bất thường, có yêu cầu giữ bí mật hoặc khiến em không an tâm, hãy hỏi người lớn đáng tin cậy trước.'
+        ])
+    if contains('duoc khen', 'diem tot', 'diem cao', 'chuc mung', 'giup do ban', 'lam viec tot', 'tham gia cau lac bo') and not unknown_contact and not suspicious_invite:
+        return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Em đang kể về một trải nghiệm học tập hoặc quan hệ bạn bè tích cực; chưa thấy dấu hiệu nguy hiểm trong mô tả.', [
+            'Em có thể vui vẻ đón nhận lời khen và tiếp tục phát huy những việc làm tích cực.',
+            'Trao đổi lịch sự, tôn trọng sự tự nguyện của mình và của bạn bè.',
+            'Nếu xuất hiện điều khiến em khó chịu hoặc không an toàn, hãy chia sẻ với người lớn đáng tin cậy.'
+        ])
+    if study_invite and unknown_contact:
+        return ('CẦN XÁC MINH', 'Lời mời học nhóm đến từ người chưa quen rõ ngoài đời; cần xác minh trước khi gặp mặt.', [
+            'Không hẹn gặp riêng người mới quen qua mạng và không chia sẻ địa chỉ, lịch trình hay thông tin cá nhân.',
+            'Hỏi cha mẹ hoặc thầy cô; nếu thực sự cần học nhóm, ưu tiên nhóm có bạn học quen biết và địa điểm công khai.',
+            'Nếu người đó thúc ép giữ bí mật, gửi ảnh hoặc chuyển tiền, hãy dừng liên hệ và báo người lớn.'
+        ])
     return ('CHƯA ĐỦ THÔNG TIN', 'Ứng dụng chưa nhận diện chắc chắn tình huống của em; điều này không có nghĩa là an toàn.', [
         'Hãy nói rõ sự việc với thầy cô, cha mẹ hoặc người lớn đáng tin cậy để được hỗ trợ phù hợp.',
         'Không đưa thông tin cá nhân thật lên ứng dụng. Nếu có đe dọa hoặc nguy hiểm, hãy tìm sự trợ giúp ngay.',
@@ -497,7 +589,7 @@ with tab6:
             level, explanation, steps = advise_student_situation(student_story)
             if level in ('CẦN HỖ TRỢ NGAY', 'NGUY CƠ CAO'):
                 st.error('🚨 ' + level)
-            elif level == 'CHƯA ĐỦ THÔNG TIN':
+            elif level in ('CHƯA ĐỦ THÔNG TIN', 'TÌNH HUỐNG BÌNH THƯỜNG'):
                 st.info('ℹ️ ' + level)
             else:
                 st.warning('⚠️ ' + level)
@@ -509,6 +601,7 @@ with tab6:
 
 with tab5:
     st.subheader('ℹ️ Giới thiệu phần mềm')
+    st.caption('Phiên bản 4.4 – Bổ sung cảnh báo dụ dỗ gặp mặt và kiểm thử tình huống')
     st.write('**Mục tiêu:** Giúp học sinh THCS nhận diện dấu hiệu lừa đảo và luyện kỹ năng ứng xử an toàn trên mạng.')
     st.markdown('**Các hoạt động chính**')
     st.write('🔎 **Kiểm tra tin:** Nhận cảnh báo và hướng dẫn xác minh tin nhắn.')
