@@ -439,6 +439,31 @@ def advise_student_situation(message):
             'Ghi lại sự việc và lưu tin nhắn nếu có; tránh đáp trả bằng xúc phạm hoặc bạo lực.',
             'Nếu có đe dọa hoặc nguy cơ bị đánh, hãy ưu tiên đến nơi an toàn và báo ngay cho người lớn.'
         ])
+    # Cuộc gọi lạ, im lặng, gọi liên tục: không tự kết luận là lừa đảo.
+    if contains('goi dien', 'cuoc goi', 'so la goi', 'so dien thoai la', 'dien thoai la', 'nhay may', 'goi nhieu lan', 'goi lien tuc', 'goi hoai', 'goi ma khong noi', 'khong nghe ai noi', 'dau so', 'so may la'):
+        return ('CẦN QUAN TÂM', 'Em mô tả những cuộc gọi bất thường hoặc làm phiền. Chưa đủ căn cứ kết luận người gọi là ai hay có lừa đảo hay không.', [
+            'Không gọi lại số lạ chỉ vì tò mò; không cung cấp mã OTP, mật khẩu, địa chỉ hoặc thông tin cá nhân.',
+            'Nếu tiếp tục bị làm phiền, ghi lại thời điểm và tần suất cuộc gọi, chặn số và báo cuộc gọi rác qua chức năng của điện thoại hoặc nhà mạng.',
+            'Nhờ cha mẹ hoặc người lớn đáng tin cậy hỗ trợ. Nếu người gọi đe dọa, tống tiền hoặc biết thông tin riêng tư của em, hãy báo ngay cho người lớn và giữ bằng chứng.'
+        ])
+    if contains('gia danh', 'mao danh', 'cong an goi', 'nhan vien ngan hang', 'nhan vien giao hang', 'yeu cau cai app', 'cai ung dung la', 'quet ma qr', 'qr la'):
+        return ('CẦN XÁC MINH', 'Có dấu hiệu liên hệ giả danh hoặc yêu cầu thao tác có thể gây rủi ro.', [
+            'Không làm theo yêu cầu cài ứng dụng, quét mã QR, chuyển tiền hoặc cung cấp OTP qua cuộc gọi hay tin nhắn chưa xác minh.',
+            'Ngắt liên lạc và tự tìm số điện thoại chính thức của cơ quan, đơn vị để xác minh; không gọi theo số người lạ cung cấp.',
+            'Nhờ cha mẹ hoặc thầy cô kiểm tra cùng. Nếu đã cung cấp thông tin tài khoản, báo ngay cho ngân hàng hoặc đơn vị liên quan qua kênh chính thức.'
+        ])
+    if contains('bi theo doi', 'theo doi em', 'nguoi la bam theo', 'nguoi la ru di', 'ru len xe', 'hen gap mot minh'):
+        return ('NGUY CƠ CAO', 'Có dấu hiệu tiếp cận hoặc theo dõi khiến em có thể không an toàn.', [
+            'Không đi theo người lạ, không đến điểm hẹn một mình; di chuyển đến nơi đông người hoặc nơi có người lớn đáng tin cậy.',
+            'Báo ngay cho cha mẹ, thầy cô hoặc bảo vệ gần nhất; chia sẻ vị trí với người thân qua kênh riêng.',
+            'Nếu có nguy hiểm trực tiếp, nhờ người lớn gọi 113; trẻ em có thể gọi 111 để được hỗ trợ.'
+        ])
+    if contains('bi hack', 'mat nick', 'chiem tai khoan', 'lo mat khau', 'lo otp', 'tai khoan bi danh cap'):
+        return ('CẦN XÁC MINH', 'Có dấu hiệu tài khoản hoặc thông tin đăng nhập bị xâm phạm.', [
+            'Đổi mật khẩu ngay từ thiết bị tin cậy, đăng xuất các phiên lạ và bật xác thực hai bước nếu còn truy cập được.',
+            'Không cung cấp thêm mã OTP hay mật khẩu cho người tự xưng hỗ trợ; liên hệ bộ phận hỗ trợ chính thức của dịch vụ.',
+            'Báo cho cha mẹ hoặc thầy cô nếu có tin nhắn mạo danh gửi từ tài khoản của em.'
+        ])
     if contains('otp', 'mat khau', 'chuyen tien', 'trung thuong', 'hoc bong', 'link la', 'duong link', 'lua dao', 'tai khoan bi khoa', 'ma xac thuc'):
         return ('CẦN XÁC MINH', 'Nội dung có thể liên quan đến nguy cơ lừa đảo hoặc lộ thông tin trên mạng.', [
             'Không cung cấp mã OTP, mật khẩu, giấy tờ cá nhân hoặc chuyển tiền khi chưa xác minh.',
