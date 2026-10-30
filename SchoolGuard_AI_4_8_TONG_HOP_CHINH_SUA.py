@@ -114,13 +114,6 @@ def rules(text):
     ):
         return ["Noi dung co dau hieu giao duc/phong tranh"], "education"
 
-    # Rủ gặp riêng người quen qua mạng, giấu người thân: ưu tiên cảnh báo cao.
-    online = has("quen qua facebook", "quen qua mang", "quen tren mang", "quen qua game", "nguoi quen qua facebook", "nguoi quen tren mang", "nguoi tren mang", "tren mang", "online")
-    invite = has("ru em", "ru di", "ru hai dua", "ru chung em", "di uong nuoc", "di choi", "di xa", "di gap", "hen gap", "gap mat", "den nha", "toi nha")
-    secrecy = has("khong ke voi bo me", "khong noi voi bo me", "khong cho bo me biet", "khong cho cha me biet", "dung cho bo me biet", "dung noi voi bo me", "giau bo me", "giau gia dinh", "giu bi mat", "khong ke voi gia dinh", "khong noi voi gia dinh")
-    if online and invite and secrecy:
-        findings.append("Du do gap rieng va giau gia dinh")
-
     if has("otp", "ma xac thuc", "ma dang nhap",
            "ma khoi phuc", "ma nhan hang") and has(
            "gui", "doc", "nhap", "cung cap", "chia se", "chup"):
@@ -175,30 +168,16 @@ def rules(text):
     if urgent_event and link_request:
         findings.append("Tin khan cap kem lien ket can xac minh")
 
-    if has("chan danh", "danh em", "danh chet", "de doa danh", "tung anh rieng tu", "phat tan anh", "ep gui anh rieng tu") and has("neu khong", "de doa", "se", "bat", "ep"):
-        findings.append("De doa an toan ca nhan")
     return findings, "risk" if findings else "none"
 
 
 def analyze(text):
     p = float(model.predict_proba([text])[0][1])
     findings, kind = rules(text)
-    # Dùng cùng nhận diện nguy cơ rõ ràng với Góc chia sẻ để tránh bất nhất.
-    if kind != 'education':
-        advice_level, _, _ = advise_student_situation(text)
-        if advice_level in ('NGUY CƠ CAO', 'CẦN HỖ TRỢ NGAY'):
-            if not findings:
-                findings.append('Nguy co tu tinh huong hoc sinh')
-            kind = 'risk'
-        elif advice_level in ('CẦN XÁC MINH', 'CẦN QUAN TÂM'):
-            kind = 'caution' if kind != 'risk' else kind
-
     if kind == 'education':
         level = 'THẤP'
     elif kind == 'risk':
         level = 'CAO'
-    elif kind == 'caution':
-        level = 'TRUNG BÌNH'
     elif p >= 0.72:
         level = 'CAO'
     elif p >= 0.52:
@@ -208,30 +187,23 @@ def analyze(text):
     return p, level, findings
 
 st.markdown("""<style>
-.block-container {max-width: 1250px; padding-top: 1.6rem; padding-bottom: 2.5rem;}
-html, body, [data-testid="stAppViewContainer"] {font-size: 20px !important;}
-h1 {font-size: clamp(1.85rem, 3vw, 2.5rem) !important; line-height: 1.28 !important;}
-h2 {font-size: clamp(1.75rem, 2.7vw, 2.15rem) !important;}
-h3 {font-size: clamp(1.55rem, 2.3vw, 1.9rem) !important;}
-.stMarkdown p, .stMarkdown li, [data-testid="stWidgetLabel"] p,
-[data-testid="stAlert"] p, [data-testid="stCaptionContainer"] p
-{font-size: 1.22rem !important; line-height: 1.55 !important;}
-button, input, textarea, [role="radio"], [data-testid="stSelectbox"]
-{font-size: 1.2rem !important;}
-[data-testid="stTabs"] [role="tab"] {font-size: 1.24rem !important; font-weight: 700 !important; padding: 0.9rem 1.1rem !important; min-height: 3.6rem !important; white-space: nowrap !important;}
-[data-testid="stTabs"] [data-baseweb="tab-list"] {overflow-x: auto !important; gap: 0.25rem !important;}
-[data-testid="stTextArea"] textarea {font-size: 1.23rem !important; line-height: 1.5 !important;}
-[data-testid="stButton"] button, [data-testid="stFormSubmitButton"] button {font-size: 1.2rem !important; font-weight: 700; min-height: 3rem; border-radius: 9px;}
+.block-container {max-width: 1120px; padding-top: 1.7rem; padding-bottom: 2.5rem;}
+h1 {font-size: clamp(1.7rem, 3vw, 2.3rem) !important; letter-spacing: -0.02em;}
+html, body, [data-testid="stAppViewContainer"] {font-size: 18px;}
+.stMarkdown p, .stMarkdown li, [data-testid="stWidgetLabel"] p {font-size: 1.1rem !important; line-height: 1.55;}
+h2 {font-size: clamp(1.5rem, 2.6vw, 1.9rem) !important;}
+h3 {font-size: clamp(1.25rem, 2vw, 1.55rem) !important;}
+button, input, textarea, [role="radio"], [role="tab"] {font-size: 1.05rem !important;}
+[data-testid="stAlert"] p {font-size: 1.08rem !important;}
+@media (max-width: 640px) {.block-container {padding-left: 0.8rem; padding-right: 0.8rem;} h1 {font-size: 1.65rem !important;}}
+h2, h3 {letter-spacing: -0.01em;}
+div.stButton > button, div.stFormSubmitButton > button {border-radius: 9px; font-weight: 600;}
 [data-testid="stAlert"] {border-radius: 10px;}
-@media (max-width: 640px) {
- .block-container {padding-left: 0.8rem; padding-right: 0.8rem;}
- [data-testid="stTabs"] [role="tab"] {font-size: 1.12rem !important; padding: 0.7rem !important;}
-}
 </style>""", unsafe_allow_html=True)
 st.title("PHẦN MỀM HỖ TRỢ HỌC SINH THCS NHẬN DIỆN NGUY CƠ VÀ ỨNG XỬ AN TOÀN TRÊN KHÔNG GIAN MẠNG")
 st.caption('Nhận diện nguy cơ • Rèn kỹ năng • Bảo vệ bản thân')
 
-tab1, tab2, tab3, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử an toàn mạng', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
+tab1, tab2, tab3, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử & Tình huống', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
 
 with tab1:
     st.subheader('🔎 Kiểm tra mức độ an toàn của tin nhắn')
@@ -246,13 +218,10 @@ with tab1:
             elif level == 'TRUNG BÌNH':
                 st.warning('⚠️ Mức cảnh báo: TRUNG BÌNH')
             else:
-                st.success('🟢 Mức cảnh báo: THẤP')
+                st.success('Mức cảnh báo: THẤP (không bảo đảm an toàn)')
             st.markdown('### 🔍 Vì sao tin nhắn được đánh giá như vậy?')
             if findings:
                 descriptions = {
-                    'Du do gap rieng va giau gia dinh': 'Người quen qua mạng rủ gặp ở nơi xa và yêu cầu giấu gia đình là dấu hiệu dụ dỗ nguy hiểm.',
-                    'De doa an toan ca nhan': 'Tin nhắn có dấu hiệu đe dọa an toàn hoặc ép buộc.',
-                    'Nguy co tu tinh huong hoc sinh': 'Nội dung có dấu hiệu nguy hiểm đối với học sinh; cần người lớn đáng tin cậy hỗ trợ.',
                     'Yeu cau ma xac thuc hoac ma khoi phuc': 'Tin nhắn yêu cầu mã OTP hoặc mã xác thực. Em tuyệt đối không đưa mã này cho người khác.',
                     'Yeu cau thong tin nhay cam': 'Tin nhắn yêu cầu thông tin riêng tư như mật khẩu, giấy tờ hoặc tài khoản ngân hàng.',
                     'Yeu cau tat tinh nang bao mat': 'Yêu cầu tắt tính năng bảo vệ thiết bị là dấu hiệu đáng cảnh giác.',
@@ -277,10 +246,9 @@ with tab1:
             st.markdown('### 🛡️ Em nên làm gì tiếp theo?')
             if level == 'CAO':
                 st.error('**DỪNG LẠI – KIỂM TRA TRƯỚC KHI HÀNH ĐỘNG**')
-                st.write('① Không gặp riêng người quen qua mạng, không làm theo yêu cầu đe dọa hoặc giữ bí mật với gia đình.')
-                st.write('② Không bấm liên kết hoặc tải tệp chưa xác minh.')
-                st.write('③ Không gửi OTP, mật khẩu, thông tin cá nhân hay chuyển tiền.')
-                st.write('④ Báo ngay cho cha mẹ, thầy cô hoặc người lớn đáng tin cậy; nếu có nguy hiểm trực tiếp, tìm trợ giúp khẩn cấp.')
+                st.write('① Không bấm liên kết hoặc tải tệp chưa xác minh.')
+                st.write('② Không gửi OTP, mật khẩu, thông tin cá nhân hay chuyển tiền.')
+                st.write('③ Hỏi trực tiếp thầy cô, cha mẹ hoặc liên hệ qua kênh chính thức để kiểm tra.')
             elif level == 'TRUNG BÌNH':
                 st.warning('**CẦN XÁC MINH THÊM**')
                 st.write('① Kiểm tra người gửi và nội dung qua kênh chính thức.')
@@ -369,7 +337,7 @@ DETECTIVE.extend([('Em trúng học bổng nhưng phải đóng phí xác nhận
 DETECTIVE_CHOICES = ['Có dấu hiệu đáng tin cậy', 'Không đáng tin cậy', 'Cần xác minh thêm']
 
 with tab3:
-    st.subheader('🔍 Giải mã tin nhắn – Em có nhận ra tin nhắn đáng nghi?')
+    st.subheader('🕵️ Thám tử tin nhắn – Em có nhận ra tin nhắn đáng nghi?')
     st.write('Ngân hàng **100 tin nhắn**; mỗi lượt chọn ngẫu nhiên **10 tin nhắn** để em nhận định và xem hướng dẫn.')
     if 'detective_round_33' not in st.session_state:
         st.session_state.detective_order_33 = random.sample(range(len(DETECTIVE)), 10)
@@ -416,14 +384,14 @@ with tab3:
             st.session_state.detective_score_33 = 0
             st.session_state.detective_feedback_33 = None
             st.rerun()
-
+    st.caption('Đây là trò chơi rèn kỹ năng; điểm trò chơi không phản ánh độ chính xác của mô hình AI.')
 
 # Tình huống giáo dục giả lập, không dùng để đánh giá độ chính xác của mô hình.
 SITUATIONS = [('Học bổng bất ngờ', 'Em nhận được tin nhắn báo trúng học bổng, nhưng người gửi yêu cầu nộp phí xác nhận ngay.', ['Nộp tiền để giữ suất học bổng', 'Liên hệ trực tiếp với giáo viên hoặc nhà trường để xác minh', 'Gửi thông tin tài khoản cho người nhắn'], 1, 'Học bổng cần được xác minh qua nhà trường. Không chuyển tiền hoặc cung cấp thông tin riêng tư chỉ vì một tin nhắn.'), ('Giả danh giáo viên', 'Một tài khoản lạ dùng ảnh đại diện giống giáo viên của em và yêu cầu chuyển tiền gấp.', ['Gọi điện hoặc gặp trực tiếp giáo viên để kiểm tra', 'Chuyển tiền ngay vì nhận ra ảnh đại diện', 'Gửi mã xác thực OTP cho tài khoản đó'], 0, 'Ảnh đại diện và tên tài khoản có thể bị giả mạo. Hãy xác minh bằng cách liên hệ trực tiếp với giáo viên.'), ('Đường liên kết lạ', 'Em nhận được tin nhắn yêu cầu mở một đường liên kết để tránh bị khóa tài khoản.', ['Mở đường liên kết và nhập mật khẩu', 'Chuyển đường liên kết cho bạn thử', 'Tự mở ứng dụng chính thức để kiểm tra tài khoản'], 2, 'Không đăng nhập qua đường liên kết chưa rõ nguồn gốc. Hãy kiểm tra tài khoản trong ứng dụng hoặc trang web chính thức.'), ('Trúng thưởng điện thoại', 'Người lạ thông báo em trúng điện thoại, nhưng phải trả phí vận chuyển trước.', ['Chuyển phí vận chuyển ngay', 'Không chuyển tiền và kiểm tra thông tin chương trình', 'Gửi ảnh giấy tờ tùy thân để nhận thưởng'], 1, 'Yêu cầu trả tiền trước để nhận thưởng là dấu hiệu đáng nghi. Hãy trao đổi với người lớn trước khi quyết định.'), ('Bị đe dọa trên mạng', 'Một người đe dọa phát tán hình ảnh riêng tư của em nếu em không chuyển tiền.', ['Chuyển tiền để người đó giữ im lặng', 'Lưu bằng chứng và báo ngay cho người lớn đáng tin cậy', 'Gửi thêm hình ảnh để thương lượng'], 1, 'Không chuyển tiền và không gửi thêm hình ảnh. Hãy lưu tin nhắn làm bằng chứng và tìm người lớn hỗ trợ ngay.'), ('Yêu cầu mã xác thực OTP', 'Một người tự nhận là nhân viên hỗ trợ tài khoản và yêu cầu em đọc mã xác thực OTP vừa nhận được.', ['Đọc mã OTP vì người đó tự nhận là nhân viên', 'Không cung cấp mã OTP và báo người lớn nếu bị thúc ép', 'Đăng mã OTP lên nhóm lớp để hỏi ý kiến'], 1, 'Mã xác thực OTP có thể dùng để đăng nhập hoặc thực hiện giao dịch. Không cung cấp mã cho người khác.'), ('Quà tặng trong trò chơi', 'Một người hứa tặng vật phẩm trong trò chơi nếu em cung cấp mật khẩu tài khoản.', ['Gửi mật khẩu để nhận quà', 'Đổi mật khẩu thành tên mình cho dễ nhớ', 'Từ chối và giữ bí mật mật khẩu'], 2, 'Không cung cấp mật khẩu để đổi lấy quà tặng. Hãy sử dụng mật khẩu mạnh và giữ bí mật thông tin đăng nhập.'), ('Bạn thân nhắn mượn tiền', 'Tài khoản của một người bạn thân nhắn hỏi mượn tiền gấp, nhưng cách diễn đạt khác hẳn ngày thường.', ['Gọi trực tiếp cho bạn qua số đã biết để xác minh', 'Chuyển tiền ngay vì đó là tài khoản của bạn', 'Gửi mã OTP để xác nhận giúp bạn'], 0, 'Tài khoản của người quen cũng có thể bị chiếm quyền. Hãy xác minh qua cuộc gọi hoặc gặp trực tiếp.'), ('Mã QR nhận quà', 'Em được yêu cầu quét một mã QR lạ rồi đăng nhập tài khoản để nhận quà.', ['Quét mã và nhập mật khẩu ngay', 'Không đăng nhập khi chưa xác minh nguồn của mã QR', 'Nhờ bạn đăng nhập hộ bằng tài khoản của mình'], 1, 'Mã QR có thể dẫn đến trang giả mạo. Hãy kiểm tra nguồn trước khi quét và không nhập mật khẩu vào trang lạ.'), ('Tệp cài đặt không rõ nguồn', 'Người lạ gửi tệp cài đặt ứng dụng và bảo em cài vào điện thoại để xem điểm kiểm tra.', ['Cài ngay để xem điểm', 'Chuyển tệp cho cả lớp cùng cài', 'Không cài và hỏi giáo viên về cách xem điểm chính thức'], 2, 'Tệp cài đặt từ nguồn lạ có thể gây hại cho thiết bị. Chỉ cài ứng dụng từ nguồn đáng tin cậy.'), ('Đe dọa khóa tài khoản', 'Tin nhắn thông báo tài khoản sẽ bị khóa sau 10 phút nếu em không đăng nhập qua đường liên kết được gửi kèm.', ['Tự mở ứng dụng chính thức để kiểm tra', 'Mở ngay đường liên kết vì sợ bị khóa', 'Nhập mật khẩu vào trang được gửi trong tin nhắn'], 0, 'Tin nhắn tạo áp lực thời gian có thể nhằm khiến em hành động vội vàng. Hãy kiểm tra bằng kênh chính thức.'), ('Bình chọn cuộc thi', 'Một tài khoản gửi đường liên kết và nhờ em đăng nhập mạng xã hội để bình chọn cho bạn.', ['Đăng nhập ngay qua đường liên kết', 'Xác minh nguồn và không nhập mật khẩu vào trang lạ', 'Gửi mật khẩu cho người nhờ bình chọn'], 1, 'Trang bình chọn giả mạo có thể đánh cắp thông tin đăng nhập. Hãy kiểm tra địa chỉ trang và nguồn gửi.'), ('Giả danh người thân', 'Một số điện thoại lạ tự nhận là người thân và yêu cầu em gửi ảnh giấy tờ của gia đình.', ['Gửi ngay vì người đó biết tên em', 'Đăng ảnh giấy tờ lên nhóm để hỏi mọi người', 'Gọi cho người thân qua số điện thoại đã lưu để xác minh'], 2, 'Không gửi giấy tờ tùy thân cho người chưa xác minh danh tính. Hãy liên hệ người thân bằng kênh quen thuộc.'), ('Lời mời kiếm tiền trên mạng', 'Một người rủ em làm nhiệm vụ trên mạng, nhưng yêu cầu nạp tiền trước mới được nhận thưởng.', ['Không nạp tiền và trao đổi với người lớn', 'Nạp một ít tiền để thử', 'Mượn tiền bạn để tham gia'], 0, 'Lời hứa kiếm tiền dễ dàng kèm yêu cầu nạp tiền trước là dấu hiệu đáng cảnh giác.'), ('Yêu cầu chia sẻ màn hình', 'Một người lạ đề nghị em chia sẻ màn hình điện thoại để giúp khôi phục tài khoản.', ['Cho phép người lạ điều khiển điện thoại từ xa', 'Từ chối và tìm kênh hỗ trợ chính thức', 'Gửi mật khẩu để người đó kiểm tra'], 1, 'Chia sẻ màn hình có thể làm lộ mã xác thực và dữ liệu riêng tư. Hãy nhờ người lớn hoặc bộ phận hỗ trợ chính thức.'), ('Thông báo họp phụ huynh', 'Nhóm lớp đăng thông báo họp phụ huynh và không yêu cầu chuyển tiền hay cung cấp mật khẩu.', ['Xóa ngay vì chắc chắn là lừa đảo', 'Gửi mã OTP để xác nhận đã đọc', 'Đối chiếu với thông báo từ giáo viên chủ nhiệm'], 2, 'Đây có thể là thông báo học tập bình thường. Em nên kiểm tra lại qua kênh liên lạc chính thức của lớp.'), ('Lời nhắc phòng tránh lừa đảo', 'Giáo viên nhắc học sinh không chia sẻ mã OTP và không mở đường liên kết lạ.', ['Đọc và ghi nhớ lời nhắc an toàn', 'Gửi mã OTP để xác nhận đã đọc', 'Chuyển tiền để chứng minh đã hiểu'], 0, 'Đây là nội dung giáo dục về an toàn số, không phải yêu cầu cung cấp thông tin bí mật.'), ('Tài khoản mạng xã hội bị chiếm', 'Em phát hiện tài khoản mạng xã hội của mình tự gửi những tin nhắn lạ cho bạn bè.', ['Bỏ qua vì nghĩ không có gì nghiêm trọng', 'Đổi mật khẩu qua ứng dụng chính thức và báo người lớn', 'Gửi mật khẩu cho người lạ để nhờ sửa'], 1, 'Hãy đổi mật khẩu, kiểm tra phiên đăng nhập và cảnh báo bạn bè. Nhờ người lớn hỗ trợ nếu cần.'), ('Người lạ hỏi địa chỉ', 'Một người mới quen trên mạng hỏi địa chỉ nhà và thời gian em ở nhà một mình.', ['Gửi vị trí hiện tại cho người đó', 'Chụp ảnh nhà và gửi ngay', 'Không chia sẻ thông tin riêng tư và báo người lớn nếu bị ép'], 2, 'Địa chỉ và lịch sinh hoạt là thông tin riêng tư. Không chia sẻ cho người lạ trên mạng.'), ('Mua hàng trên mạng', 'Một tài khoản bán hàng yêu cầu em chuyển tiền đặt cọc trước khi cho xem thông tin sản phẩm.', ['Kiểm tra người bán và hỏi người lớn trước khi giao dịch', 'Chuyển tiền đặt cọc ngay', 'Gửi mật khẩu tài khoản ngân hàng'], 0, 'Hãy xác minh người bán, sản phẩm và điều kiện giao dịch trước khi chuyển tiền.')]
 
 with tab3:
     st.divider()
-    st.subheader('🎭 Em sẽ làm gì? – Luyện cách xử lý tình huống')
+    st.subheader('🎭 Luyện xử lý tình huống – Nếu là em, em sẽ làm gì?')
     st.write('Có **20 tình huống an toàn trên mạng** để em luyện cách xử lý an toàn.')
     names = [item[0] for item in SITUATIONS]
     selected = st.selectbox('Chọn tình huống', names, key='situation_name_33')
@@ -708,7 +676,7 @@ SHARING_EXAMPLES_100 = [item[0] for item in DETECTIVE]
 
 with tab6:
     st.subheader('💬 Góc chia sẻ – Tình huống của em')
-    st.write('Em có thể tự viết tình huống đang băn khoăn để nhận hướng dẫn an toàn ban đầu.')
+    st.write('Em có thể tự viết tình huống đang băn khoăn để nhận hướng dẫn an toàn ban đầu. Hệ thống có **100 tình huống tham khảo**, nhưng không bảo đảm nhận diện chính xác mọi cách diễn đạt.')
     st.warning('Không nhập họ tên thật, số điện thoại, địa chỉ, tên trường/lớp, mật khẩu, OTP hoặc thông tin nhận dạng người khác. Không gửi ảnh riêng tư. Nội dung có thể được xử lý trên máy chủ của ứng dụng.')
     with st.form('student_free_situation_form'):
         student_story = st.text_area('Em muốn chia sẻ điều gì?', height=155, max_chars=1500,
@@ -733,7 +701,7 @@ with tab6:
 
 with tab5:
     st.subheader('ℹ️ Giới thiệu phần mềm')
-    st.caption('Phiên bản 4.8 – Đồng bộ cảnh báo và cải thiện giao diện')
+    st.caption('Phiên bản 4.7 – Cải thiện nhận diện tình huống nguy hiểm')
     st.write('**Mục tiêu:** Giúp học sinh THCS nhận diện dấu hiệu lừa đảo và luyện kỹ năng ứng xử an toàn trên mạng.')
     st.markdown('**Các hoạt động chính**')
     st.write('🔎 **Kiểm tra tin:** Nhận cảnh báo và hướng dẫn xác minh tin nhắn.')
