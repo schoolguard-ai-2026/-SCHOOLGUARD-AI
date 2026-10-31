@@ -95,6 +95,40 @@ def rules(text):
     def has(*words):
         return any(w in t for w in words)
 
+    # Uu tien canh bao nguy co truoc cac cau co chu "khong" (vi du: khong ke bo me).
+    t = ' '.join(t.split())
+    online = has('facebook', 'qua mang', 'tren mang', 'online', 'trong game',
+                 'qua game', 'quen qua', 'quen tren', 'nguoi la', 'moi quen')
+    meeting = has('ru em di', 'ru toi di', 'ru di', 'hen gap', 'gap mat',
+                  'di uong nuoc', 'di choi', 'den gap', 'gap rieng', 'noi xa',
+                  'cho vang', 'di theo', 'len xe', 'ru em den')
+    secrecy = has('khong ke', 'dung ke', 'khong noi voi', 'khong bao',
+                  'dung noi voi', 'giu bi mat', 'giau bo me',
+                  'khong cho bo me biet', 'khong cho ai biet')
+    gift = has('tang qua', 'se tang', 'hua tang', 'cho qua', 'qua tang',
+               'kim cuong', 'nap the', 'cho tien', 'tang dien thoai')
+    if meeting and secrecy and (online or gift):
+        findings.append('Du do gap mat va giu bi mat voi nguoi lon')
+    elif online and meeting and gift:
+        findings.append('Du do gap mat va giu bi mat voi nguoi lon')
+
+    sensitive = has('otp', 'ma xac thuc', 'ma dang nhap', 'ma khoi phuc',
+                    'mat khau', 'ma bao mat', 'so the', 'thong tin ngan hang')
+    request = has('dua', 'gui', 'doc', 'nhap', 'cung cap', 'chia se', 'chup',
+                  'dien', 'yeu cau', 'bao em', 'bao toi', 'doi', 'xin', 'lay',
+                  'cho toi', 'cho minh')
+    refusal = has('khong dua', 'khong gui', 'khong cung cap', 'khong chia se',
+                  'khong nhap', 'dung dua', 'dung gui', 'dung cung cap',
+                  'dung chia se', 'tuyet doi khong', 'khong nen')
+    if sensitive and request and not refusal:
+        if has('otp', 'ma xac thuc', 'ma dang nhap', 'ma khoi phuc'):
+            findings.append('Yeu cau ma xac thuc hoac ma khoi phuc')
+        if has('mat khau', 'ma bao mat', 'so the', 'thong tin ngan hang'):
+            findings.append('Yeu cau thong tin nhay cam')
+
+    if findings:
+        return findings, 'risk'
+
     protective = has(
         "khong yeu cau", "khong thu tien", "khong chia se",
         "khong cung cap", "khong gui", "khong nen",
@@ -216,6 +250,7 @@ with tab1:
             st.markdown('### 🔍 Vì sao tin nhắn được đánh giá như vậy?')
             if findings:
                 descriptions = {
+                    'Du do gap mat va giu bi mat voi nguoi lon': 'Người quen qua mạng rủ gặp riêng và yêu cầu giấu bố mẹ là dấu hiệu nguy hiểm. Không đi gặp; hãy báo ngay cho người lớn đáng tin cậy.',
                     'Yeu cau ma xac thuc hoac ma khoi phuc': 'Tin nhắn yêu cầu mã OTP hoặc mã xác thực. Em tuyệt đối không đưa mã này cho người khác.',
                     'Yeu cau thong tin nhay cam': 'Tin nhắn yêu cầu thông tin riêng tư như mật khẩu, giấy tờ hoặc tài khoản ngân hàng.',
                     'Yeu cau tat tinh nang bao mat': 'Yêu cầu tắt tính năng bảo vệ thiết bị là dấu hiệu đáng cảnh giác.',
