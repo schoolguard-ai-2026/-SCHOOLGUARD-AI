@@ -98,18 +98,20 @@ def rules(text):
     # Uu tien canh bao nguy co truoc cac cau co chu "khong" (vi du: khong ke bo me).
     t = ' '.join(t.split())
     online = has('facebook', 'qua mang', 'tren mang', 'online', 'trong game',
-                 'qua game', 'quen qua', 'quen tren', 'nguoi la', 'moi quen')
+                 'qua game', 'quen qua', 'quen tren', 'nguoi la', 'moi quen', 'mang xa hoi', 'tiktok', 'zalo', 'instagram')
     meeting = has('ru em di', 'ru toi di', 'ru di', 'hen gap', 'gap mat',
                   'di uong nuoc', 'di choi', 'den gap', 'gap rieng', 'noi xa',
-                  'cho vang', 'di theo', 'len xe', 'ru em den')
+                  'cho vang', 'di theo', 'len xe', 'ru em den', 'hen em', 'ru toi', 'moi em di', 'moi di', 'di an', 'gap o', 'den noi vang')
     secrecy = has('khong ke', 'dung ke', 'khong noi voi', 'khong bao',
                   'dung noi voi', 'giu bi mat', 'giau bo me',
-                  'khong cho bo me biet', 'khong cho ai biet')
+                  'khong cho bo me biet', 'khong cho ai biet', 'khong ke voi', 'khong duoc ke', 'khong duoc noi', 'khong cho cha me biet', 'dung bao', 'khong de bo me biet')
     gift = has('tang qua', 'se tang', 'hua tang', 'cho qua', 'qua tang',
-               'kim cuong', 'nap the', 'cho tien', 'tang dien thoai')
+               'kim cuong', 'nap the', 'cho tien', 'tang dien thoai', 'qua mien phi', 'thuong qua')
     if meeting and secrecy and (online or gift):
         findings.append('Du do gap mat va giu bi mat voi nguoi lon')
     elif online and meeting and gift:
+        findings.append('Du do gap mat va giu bi mat voi nguoi lon')
+    elif meeting and secrecy:
         findings.append('Du do gap mat va giu bi mat voi nguoi lon')
 
     sensitive = has('otp', 'ma xac thuc', 'ma dang nhap', 'ma khoi phuc',
@@ -231,7 +233,7 @@ st.title("PHẦN MỀM HỖ TRỢ HỌC SINH THCS NHẬN DIỆN NGUY CƠ VÀ Ứ
 st.caption('Nhận diện nguy cơ • Rèn kỹ năng • Bảo vệ bản thân')
 st.info('Đây là phần mềm học tập sử dụng tình huống giả lập. Không nhập mật khẩu, mã xác thực OTP hoặc thông tin cá nhân thật. Kết quả chỉ mang tính tham khảo, không bảo đảm tin nhắn an toàn.')
 
-tab1, tab2, tab3, tab4, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử tin nhắn', '🎭 Góc tình huống', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
+tab1, tab2, tab3, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử an toàn mạng', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
 
 with tab1:
     st.subheader('🔎 Kiểm tra mức độ an toàn của tin nhắn')
@@ -275,9 +277,14 @@ with tab1:
             st.markdown('### 🛡️ Em nên làm gì tiếp theo?')
             if level == 'CAO':
                 st.error('**DỪNG LẠI – KIỂM TRA TRƯỚC KHI HÀNH ĐỘNG**')
-                st.write('① Không bấm liên kết hoặc tải tệp chưa xác minh.')
-                st.write('② Không gửi OTP, mật khẩu, thông tin cá nhân hay chuyển tiền.')
-                st.write('③ Hỏi trực tiếp thầy cô, cha mẹ hoặc liên hệ qua kênh chính thức để kiểm tra.')
+                if 'Du do gap mat va giu bi mat voi nguoi lon' in findings:
+                    st.write('① Tuyệt đối không đi gặp riêng hoặc đi theo người quen qua mạng.')
+                    st.write('② Báo ngay cho cha mẹ hoặc thầy cô đáng tin cậy, giữ lại tin nhắn để được hỗ trợ.')
+                    st.write('③ Không chia sẻ địa chỉ, vị trí hay lịch trình cá nhân.')
+                else:
+                    st.write('① Không bấm liên kết hoặc tải tệp chưa xác minh.')
+                    st.write('② Không gửi OTP, mật khẩu, thông tin cá nhân hay chuyển tiền.')
+                    st.write('③ Hỏi trực tiếp thầy cô, cha mẹ hoặc liên hệ qua kênh chính thức để kiểm tra.')
             elif level == 'TRUNG BÌNH':
                 st.warning('**CẦN XÁC MINH THÊM**')
                 st.write('① Kiểm tra người gửi và nội dung qua kênh chính thức.')
@@ -362,252 +369,254 @@ DETECTIVE = [
 DETECTIVE_CHOICES = ['Có dấu hiệu đáng tin cậy', 'Không đáng tin cậy', 'Cần xác minh thêm']
 
 with tab3:
-    st.subheader('🕵️ Thám tử tin nhắn – Em có nhận ra tin nhắn đáng nghi?')
-    st.write('Đọc tin nhắn, chọn nhận định phù hợp rồi xem lý do và cách xử lý an toàn.')
-    if 'detective_round_33' not in st.session_state:
-        st.session_state.detective_round_33 = 0
-        st.session_state.detective_score_33 = 0
-        st.session_state.detective_feedback_33 = None
-    i = st.session_state.detective_round_33
-    if i < len(DETECTIVE):
-        msg, truth, why, action = DETECTIVE[i]
-        st.progress(i / len(DETECTIVE))
-        st.write(f'**Tình huống {i+1}/{len(DETECTIVE)}**')
-        st.info(msg)
-        if st.session_state.detective_feedback_33 is None:
-            with st.form(f'detective_form_33_{i}'):
-                pick = st.radio('Em nhận xét thế nào?', DETECTIVE_CHOICES, index=None, key=f'detective_pick_33_{i}')
-                check = st.form_submit_button('🔎 KIỂM TRA')
-            if check:
-                if pick is None:
-                    st.warning('Em hãy chọn một câu trả lời nhé!')
-                else:
-                    correct = pick == truth
-                    if correct:
-                        st.session_state.detective_score_33 += 1
-                    st.session_state.detective_feedback_33 = correct
-                    st.rerun()
-        else:
-            if st.session_state.detective_feedback_33:
-                st.success('🎉 Chính xác! Em đã nhận diện đúng.')
-            else:
-                st.warning('Em chưa chọn đúng. Cùng xem lý do và ghi nhớ cách xử lý nhé!')
-            st.write('**Đáp án đúng:** ' + truth)
-            st.write('**Vì sao?** ' + why)
-            st.write('**Em nên làm gì?** ' + action)
-            if st.button('➡️ TÌNH HUỐNG TIẾP THEO', key=f'detective_next_33_{i}'):
-                st.session_state.detective_round_33 += 1
-                st.session_state.detective_feedback_33 = None
-                st.rerun()
-    else:
-        st.success(f'🏆 Em đã hoàn thành! Kết quả: {st.session_state.detective_score_33}/{len(DETECTIVE)} tình huống.')
-        st.write('Hãy luôn kiểm tra nguồn gửi trước khi làm theo tin nhắn.')
-        if st.button('🔄 CHƠI LẠI', key='detective_replay_33'):
+    detective_tab, situation_tab = st.tabs(['🔍 Giải mã tin nhắn', '🎭 Em sẽ làm gì?'])
+    with detective_tab:
+        st.subheader('🕵️ Thám tử tin nhắn – Em có nhận ra tin nhắn đáng nghi?')
+        st.write('Đọc tin nhắn, chọn nhận định phù hợp rồi xem lý do và cách xử lý an toàn.')
+        if 'detective_round_33' not in st.session_state:
             st.session_state.detective_round_33 = 0
             st.session_state.detective_score_33 = 0
             st.session_state.detective_feedback_33 = None
-            st.rerun()
-    st.caption('Đây là trò chơi rèn kỹ năng; điểm trò chơi không phản ánh độ chính xác của mô hình AI.')
-
-# Tình huống giáo dục giả lập, không dùng để đánh giá độ chính xác của mô hình.
-SITUATIONS = [('Học bổng bất ngờ', 'Em nhận được tin nhắn báo trúng học bổng, nhưng người gửi yêu cầu nộp phí xác nhận ngay.', ['Nộp tiền để giữ suất học bổng', 'Liên hệ trực tiếp với giáo viên hoặc nhà trường để xác minh', 'Gửi thông tin tài khoản cho người nhắn'], 1, 'Học bổng cần được xác minh qua nhà trường. Không chuyển tiền hoặc cung cấp thông tin riêng tư chỉ vì một tin nhắn.'), ('Giả danh giáo viên', 'Một tài khoản lạ dùng ảnh đại diện giống giáo viên của em và yêu cầu chuyển tiền gấp.', ['Gọi điện hoặc gặp trực tiếp giáo viên để kiểm tra', 'Chuyển tiền ngay vì nhận ra ảnh đại diện', 'Gửi mã xác thực OTP cho tài khoản đó'], 0, 'Ảnh đại diện và tên tài khoản có thể bị giả mạo. Hãy xác minh bằng cách liên hệ trực tiếp với giáo viên.'), ('Đường liên kết lạ', 'Em nhận được tin nhắn yêu cầu mở một đường liên kết để tránh bị khóa tài khoản.', ['Mở đường liên kết và nhập mật khẩu', 'Chuyển đường liên kết cho bạn thử', 'Tự mở ứng dụng chính thức để kiểm tra tài khoản'], 2, 'Không đăng nhập qua đường liên kết chưa rõ nguồn gốc. Hãy kiểm tra tài khoản trong ứng dụng hoặc trang web chính thức.'), ('Trúng thưởng điện thoại', 'Người lạ thông báo em trúng điện thoại, nhưng phải trả phí vận chuyển trước.', ['Chuyển phí vận chuyển ngay', 'Không chuyển tiền và kiểm tra thông tin chương trình', 'Gửi ảnh giấy tờ tùy thân để nhận thưởng'], 1, 'Yêu cầu trả tiền trước để nhận thưởng là dấu hiệu đáng nghi. Hãy trao đổi với người lớn trước khi quyết định.'), ('Bị đe dọa trên mạng', 'Một người đe dọa phát tán hình ảnh riêng tư của em nếu em không chuyển tiền.', ['Chuyển tiền để người đó giữ im lặng', 'Lưu bằng chứng và báo ngay cho người lớn đáng tin cậy', 'Gửi thêm hình ảnh để thương lượng'], 1, 'Không chuyển tiền và không gửi thêm hình ảnh. Hãy lưu tin nhắn làm bằng chứng và tìm người lớn hỗ trợ ngay.'), ('Yêu cầu mã xác thực OTP', 'Một người tự nhận là nhân viên hỗ trợ tài khoản và yêu cầu em đọc mã xác thực OTP vừa nhận được.', ['Đọc mã OTP vì người đó tự nhận là nhân viên', 'Không cung cấp mã OTP và báo người lớn nếu bị thúc ép', 'Đăng mã OTP lên nhóm lớp để hỏi ý kiến'], 1, 'Mã xác thực OTP có thể dùng để đăng nhập hoặc thực hiện giao dịch. Không cung cấp mã cho người khác.'), ('Quà tặng trong trò chơi', 'Một người hứa tặng vật phẩm trong trò chơi nếu em cung cấp mật khẩu tài khoản.', ['Gửi mật khẩu để nhận quà', 'Đổi mật khẩu thành tên mình cho dễ nhớ', 'Từ chối và giữ bí mật mật khẩu'], 2, 'Không cung cấp mật khẩu để đổi lấy quà tặng. Hãy sử dụng mật khẩu mạnh và giữ bí mật thông tin đăng nhập.'), ('Bạn thân nhắn mượn tiền', 'Tài khoản của một người bạn thân nhắn hỏi mượn tiền gấp, nhưng cách diễn đạt khác hẳn ngày thường.', ['Gọi trực tiếp cho bạn qua số đã biết để xác minh', 'Chuyển tiền ngay vì đó là tài khoản của bạn', 'Gửi mã OTP để xác nhận giúp bạn'], 0, 'Tài khoản của người quen cũng có thể bị chiếm quyền. Hãy xác minh qua cuộc gọi hoặc gặp trực tiếp.'), ('Mã QR nhận quà', 'Em được yêu cầu quét một mã QR lạ rồi đăng nhập tài khoản để nhận quà.', ['Quét mã và nhập mật khẩu ngay', 'Không đăng nhập khi chưa xác minh nguồn của mã QR', 'Nhờ bạn đăng nhập hộ bằng tài khoản của mình'], 1, 'Mã QR có thể dẫn đến trang giả mạo. Hãy kiểm tra nguồn trước khi quét và không nhập mật khẩu vào trang lạ.'), ('Tệp cài đặt không rõ nguồn', 'Người lạ gửi tệp cài đặt ứng dụng và bảo em cài vào điện thoại để xem điểm kiểm tra.', ['Cài ngay để xem điểm', 'Chuyển tệp cho cả lớp cùng cài', 'Không cài và hỏi giáo viên về cách xem điểm chính thức'], 2, 'Tệp cài đặt từ nguồn lạ có thể gây hại cho thiết bị. Chỉ cài ứng dụng từ nguồn đáng tin cậy.'), ('Đe dọa khóa tài khoản', 'Tin nhắn thông báo tài khoản sẽ bị khóa sau 10 phút nếu em không đăng nhập qua đường liên kết được gửi kèm.', ['Tự mở ứng dụng chính thức để kiểm tra', 'Mở ngay đường liên kết vì sợ bị khóa', 'Nhập mật khẩu vào trang được gửi trong tin nhắn'], 0, 'Tin nhắn tạo áp lực thời gian có thể nhằm khiến em hành động vội vàng. Hãy kiểm tra bằng kênh chính thức.'), ('Bình chọn cuộc thi', 'Một tài khoản gửi đường liên kết và nhờ em đăng nhập mạng xã hội để bình chọn cho bạn.', ['Đăng nhập ngay qua đường liên kết', 'Xác minh nguồn và không nhập mật khẩu vào trang lạ', 'Gửi mật khẩu cho người nhờ bình chọn'], 1, 'Trang bình chọn giả mạo có thể đánh cắp thông tin đăng nhập. Hãy kiểm tra địa chỉ trang và nguồn gửi.'), ('Giả danh người thân', 'Một số điện thoại lạ tự nhận là người thân và yêu cầu em gửi ảnh giấy tờ của gia đình.', ['Gửi ngay vì người đó biết tên em', 'Đăng ảnh giấy tờ lên nhóm để hỏi mọi người', 'Gọi cho người thân qua số điện thoại đã lưu để xác minh'], 2, 'Không gửi giấy tờ tùy thân cho người chưa xác minh danh tính. Hãy liên hệ người thân bằng kênh quen thuộc.'), ('Lời mời kiếm tiền trên mạng', 'Một người rủ em làm nhiệm vụ trên mạng, nhưng yêu cầu nạp tiền trước mới được nhận thưởng.', ['Không nạp tiền và trao đổi với người lớn', 'Nạp một ít tiền để thử', 'Mượn tiền bạn để tham gia'], 0, 'Lời hứa kiếm tiền dễ dàng kèm yêu cầu nạp tiền trước là dấu hiệu đáng cảnh giác.'), ('Yêu cầu chia sẻ màn hình', 'Một người lạ đề nghị em chia sẻ màn hình điện thoại để giúp khôi phục tài khoản.', ['Cho phép người lạ điều khiển điện thoại từ xa', 'Từ chối và tìm kênh hỗ trợ chính thức', 'Gửi mật khẩu để người đó kiểm tra'], 1, 'Chia sẻ màn hình có thể làm lộ mã xác thực và dữ liệu riêng tư. Hãy nhờ người lớn hoặc bộ phận hỗ trợ chính thức.'), ('Thông báo họp phụ huynh', 'Nhóm lớp đăng thông báo họp phụ huynh và không yêu cầu chuyển tiền hay cung cấp mật khẩu.', ['Xóa ngay vì chắc chắn là lừa đảo', 'Gửi mã OTP để xác nhận đã đọc', 'Đối chiếu với thông báo từ giáo viên chủ nhiệm'], 2, 'Đây có thể là thông báo học tập bình thường. Em nên kiểm tra lại qua kênh liên lạc chính thức của lớp.'), ('Lời nhắc phòng tránh lừa đảo', 'Giáo viên nhắc học sinh không chia sẻ mã OTP và không mở đường liên kết lạ.', ['Đọc và ghi nhớ lời nhắc an toàn', 'Gửi mã OTP để xác nhận đã đọc', 'Chuyển tiền để chứng minh đã hiểu'], 0, 'Đây là nội dung giáo dục về an toàn số, không phải yêu cầu cung cấp thông tin bí mật.'), ('Tài khoản mạng xã hội bị chiếm', 'Em phát hiện tài khoản mạng xã hội của mình tự gửi những tin nhắn lạ cho bạn bè.', ['Bỏ qua vì nghĩ không có gì nghiêm trọng', 'Đổi mật khẩu qua ứng dụng chính thức và báo người lớn', 'Gửi mật khẩu cho người lạ để nhờ sửa'], 1, 'Hãy đổi mật khẩu, kiểm tra phiên đăng nhập và cảnh báo bạn bè. Nhờ người lớn hỗ trợ nếu cần.'), ('Người lạ hỏi địa chỉ', 'Một người mới quen trên mạng hỏi địa chỉ nhà và thời gian em ở nhà một mình.', ['Gửi vị trí hiện tại cho người đó', 'Chụp ảnh nhà và gửi ngay', 'Không chia sẻ thông tin riêng tư và báo người lớn nếu bị ép'], 2, 'Địa chỉ và lịch sinh hoạt là thông tin riêng tư. Không chia sẻ cho người lạ trên mạng.'), ('Mua hàng trên mạng', 'Một tài khoản bán hàng yêu cầu em chuyển tiền đặt cọc trước khi cho xem thông tin sản phẩm.', ['Kiểm tra người bán và hỏi người lớn trước khi giao dịch', 'Chuyển tiền đặt cọc ngay', 'Gửi mật khẩu tài khoản ngân hàng'], 0, 'Hãy xác minh người bán, sản phẩm và điều kiện giao dịch trước khi chuyển tiền.')]
-
-with tab4:
-    st.subheader('🎭 Góc tình huống – Nếu là em, em sẽ làm gì?')
-    st.write('Có **20 tình huống an toàn trên mạng** để em luyện cách xử lý an toàn.')
-    names = [item[0] for item in SITUATIONS]
-    selected = st.selectbox('Chọn tình huống', names, key='situation_name_33')
-    idx = names.index(selected)
-    name, scenario, choices, correct, lesson = SITUATIONS[idx]
-    st.info(scenario)
-    with st.form(key=f'situation_form_33_{idx}'):
-        answer = st.radio('Em sẽ làm gì?', choices, index=None, key=f'situation_answer_33_{idx}')
-        checked = st.form_submit_button('KIỂM TRA CÁCH XỬ LÝ')
-    if checked:
-        if answer is None:
-            st.warning('Em hãy chọn một cách xử lý trước nhé.')
-        elif answer == choices[correct]:
-            st.success('🎉 Chính xác! Em đã chọn cách xử lý an toàn.')
-            st.write('**Lời khuyên:** ' + lesson)
+        i = st.session_state.detective_round_33
+        if i < len(DETECTIVE):
+            msg, truth, why, action = DETECTIVE[i]
+            st.progress(i / len(DETECTIVE))
+            st.write(f'**Tình huống {i+1}/{len(DETECTIVE)}**')
+            st.info(msg)
+            if st.session_state.detective_feedback_33 is None:
+                with st.form(f'detective_form_33_{i}'):
+                    pick = st.radio('Em nhận xét thế nào?', DETECTIVE_CHOICES, index=None, key=f'detective_pick_33_{i}')
+                    check = st.form_submit_button('🔎 KIỂM TRA')
+                if check:
+                    if pick is None:
+                        st.warning('Em hãy chọn một câu trả lời nhé!')
+                    else:
+                        correct = pick == truth
+                        if correct:
+                            st.session_state.detective_score_33 += 1
+                        st.session_state.detective_feedback_33 = correct
+                        st.rerun()
+            else:
+                if st.session_state.detective_feedback_33:
+                    st.success('🎉 Chính xác! Em đã nhận diện đúng.')
+                else:
+                    st.warning('Em chưa chọn đúng. Cùng xem lý do và ghi nhớ cách xử lý nhé!')
+                st.write('**Đáp án đúng:** ' + truth)
+                st.write('**Vì sao?** ' + why)
+                st.write('**Em nên làm gì?** ' + action)
+                if st.button('➡️ TÌNH HUỐNG TIẾP THEO', key=f'detective_next_33_{i}'):
+                    st.session_state.detective_round_33 += 1
+                    st.session_state.detective_feedback_33 = None
+                    st.rerun()
         else:
-            st.warning('⚠️ Cách xử lý này có thể khiến em gặp rủi ro.')
-            st.write('**Cách xử lý phù hợp:** ' + choices[correct])
-            st.write('**Lời khuyên:** ' + lesson)
-    st.caption('Các tình huống dùng để luyện kỹ năng, không phải dữ liệu kiểm thử AI.')
+            st.success(f'🏆 Em đã hoàn thành! Kết quả: {st.session_state.detective_score_33}/{len(DETECTIVE)} tình huống.')
+            st.write('Hãy luôn kiểm tra nguồn gửi trước khi làm theo tin nhắn.')
+            if st.button('🔄 CHƠI LẠI', key='detective_replay_33'):
+                st.session_state.detective_round_33 = 0
+                st.session_state.detective_score_33 = 0
+                st.session_state.detective_feedback_33 = None
+                st.rerun()
+        st.caption('Đây là trò chơi rèn kỹ năng; điểm trò chơi không phản ánh độ chính xác của mô hình AI.')
+
+    # Tình huống giáo dục giả lập, không dùng để đánh giá độ chính xác của mô hình.
+    SITUATIONS = [('Học bổng bất ngờ', 'Em nhận được tin nhắn báo trúng học bổng, nhưng người gửi yêu cầu nộp phí xác nhận ngay.', ['Nộp tiền để giữ suất học bổng', 'Liên hệ trực tiếp với giáo viên hoặc nhà trường để xác minh', 'Gửi thông tin tài khoản cho người nhắn'], 1, 'Học bổng cần được xác minh qua nhà trường. Không chuyển tiền hoặc cung cấp thông tin riêng tư chỉ vì một tin nhắn.'), ('Giả danh giáo viên', 'Một tài khoản lạ dùng ảnh đại diện giống giáo viên của em và yêu cầu chuyển tiền gấp.', ['Gọi điện hoặc gặp trực tiếp giáo viên để kiểm tra', 'Chuyển tiền ngay vì nhận ra ảnh đại diện', 'Gửi mã xác thực OTP cho tài khoản đó'], 0, 'Ảnh đại diện và tên tài khoản có thể bị giả mạo. Hãy xác minh bằng cách liên hệ trực tiếp với giáo viên.'), ('Đường liên kết lạ', 'Em nhận được tin nhắn yêu cầu mở một đường liên kết để tránh bị khóa tài khoản.', ['Mở đường liên kết và nhập mật khẩu', 'Chuyển đường liên kết cho bạn thử', 'Tự mở ứng dụng chính thức để kiểm tra tài khoản'], 2, 'Không đăng nhập qua đường liên kết chưa rõ nguồn gốc. Hãy kiểm tra tài khoản trong ứng dụng hoặc trang web chính thức.'), ('Trúng thưởng điện thoại', 'Người lạ thông báo em trúng điện thoại, nhưng phải trả phí vận chuyển trước.', ['Chuyển phí vận chuyển ngay', 'Không chuyển tiền và kiểm tra thông tin chương trình', 'Gửi ảnh giấy tờ tùy thân để nhận thưởng'], 1, 'Yêu cầu trả tiền trước để nhận thưởng là dấu hiệu đáng nghi. Hãy trao đổi với người lớn trước khi quyết định.'), ('Bị đe dọa trên mạng', 'Một người đe dọa phát tán hình ảnh riêng tư của em nếu em không chuyển tiền.', ['Chuyển tiền để người đó giữ im lặng', 'Lưu bằng chứng và báo ngay cho người lớn đáng tin cậy', 'Gửi thêm hình ảnh để thương lượng'], 1, 'Không chuyển tiền và không gửi thêm hình ảnh. Hãy lưu tin nhắn làm bằng chứng và tìm người lớn hỗ trợ ngay.'), ('Yêu cầu mã xác thực OTP', 'Một người tự nhận là nhân viên hỗ trợ tài khoản và yêu cầu em đọc mã xác thực OTP vừa nhận được.', ['Đọc mã OTP vì người đó tự nhận là nhân viên', 'Không cung cấp mã OTP và báo người lớn nếu bị thúc ép', 'Đăng mã OTP lên nhóm lớp để hỏi ý kiến'], 1, 'Mã xác thực OTP có thể dùng để đăng nhập hoặc thực hiện giao dịch. Không cung cấp mã cho người khác.'), ('Quà tặng trong trò chơi', 'Một người hứa tặng vật phẩm trong trò chơi nếu em cung cấp mật khẩu tài khoản.', ['Gửi mật khẩu để nhận quà', 'Đổi mật khẩu thành tên mình cho dễ nhớ', 'Từ chối và giữ bí mật mật khẩu'], 2, 'Không cung cấp mật khẩu để đổi lấy quà tặng. Hãy sử dụng mật khẩu mạnh và giữ bí mật thông tin đăng nhập.'), ('Bạn thân nhắn mượn tiền', 'Tài khoản của một người bạn thân nhắn hỏi mượn tiền gấp, nhưng cách diễn đạt khác hẳn ngày thường.', ['Gọi trực tiếp cho bạn qua số đã biết để xác minh', 'Chuyển tiền ngay vì đó là tài khoản của bạn', 'Gửi mã OTP để xác nhận giúp bạn'], 0, 'Tài khoản của người quen cũng có thể bị chiếm quyền. Hãy xác minh qua cuộc gọi hoặc gặp trực tiếp.'), ('Mã QR nhận quà', 'Em được yêu cầu quét một mã QR lạ rồi đăng nhập tài khoản để nhận quà.', ['Quét mã và nhập mật khẩu ngay', 'Không đăng nhập khi chưa xác minh nguồn của mã QR', 'Nhờ bạn đăng nhập hộ bằng tài khoản của mình'], 1, 'Mã QR có thể dẫn đến trang giả mạo. Hãy kiểm tra nguồn trước khi quét và không nhập mật khẩu vào trang lạ.'), ('Tệp cài đặt không rõ nguồn', 'Người lạ gửi tệp cài đặt ứng dụng và bảo em cài vào điện thoại để xem điểm kiểm tra.', ['Cài ngay để xem điểm', 'Chuyển tệp cho cả lớp cùng cài', 'Không cài và hỏi giáo viên về cách xem điểm chính thức'], 2, 'Tệp cài đặt từ nguồn lạ có thể gây hại cho thiết bị. Chỉ cài ứng dụng từ nguồn đáng tin cậy.'), ('Đe dọa khóa tài khoản', 'Tin nhắn thông báo tài khoản sẽ bị khóa sau 10 phút nếu em không đăng nhập qua đường liên kết được gửi kèm.', ['Tự mở ứng dụng chính thức để kiểm tra', 'Mở ngay đường liên kết vì sợ bị khóa', 'Nhập mật khẩu vào trang được gửi trong tin nhắn'], 0, 'Tin nhắn tạo áp lực thời gian có thể nhằm khiến em hành động vội vàng. Hãy kiểm tra bằng kênh chính thức.'), ('Bình chọn cuộc thi', 'Một tài khoản gửi đường liên kết và nhờ em đăng nhập mạng xã hội để bình chọn cho bạn.', ['Đăng nhập ngay qua đường liên kết', 'Xác minh nguồn và không nhập mật khẩu vào trang lạ', 'Gửi mật khẩu cho người nhờ bình chọn'], 1, 'Trang bình chọn giả mạo có thể đánh cắp thông tin đăng nhập. Hãy kiểm tra địa chỉ trang và nguồn gửi.'), ('Giả danh người thân', 'Một số điện thoại lạ tự nhận là người thân và yêu cầu em gửi ảnh giấy tờ của gia đình.', ['Gửi ngay vì người đó biết tên em', 'Đăng ảnh giấy tờ lên nhóm để hỏi mọi người', 'Gọi cho người thân qua số điện thoại đã lưu để xác minh'], 2, 'Không gửi giấy tờ tùy thân cho người chưa xác minh danh tính. Hãy liên hệ người thân bằng kênh quen thuộc.'), ('Lời mời kiếm tiền trên mạng', 'Một người rủ em làm nhiệm vụ trên mạng, nhưng yêu cầu nạp tiền trước mới được nhận thưởng.', ['Không nạp tiền và trao đổi với người lớn', 'Nạp một ít tiền để thử', 'Mượn tiền bạn để tham gia'], 0, 'Lời hứa kiếm tiền dễ dàng kèm yêu cầu nạp tiền trước là dấu hiệu đáng cảnh giác.'), ('Yêu cầu chia sẻ màn hình', 'Một người lạ đề nghị em chia sẻ màn hình điện thoại để giúp khôi phục tài khoản.', ['Cho phép người lạ điều khiển điện thoại từ xa', 'Từ chối và tìm kênh hỗ trợ chính thức', 'Gửi mật khẩu để người đó kiểm tra'], 1, 'Chia sẻ màn hình có thể làm lộ mã xác thực và dữ liệu riêng tư. Hãy nhờ người lớn hoặc bộ phận hỗ trợ chính thức.'), ('Thông báo họp phụ huynh', 'Nhóm lớp đăng thông báo họp phụ huynh và không yêu cầu chuyển tiền hay cung cấp mật khẩu.', ['Xóa ngay vì chắc chắn là lừa đảo', 'Gửi mã OTP để xác nhận đã đọc', 'Đối chiếu với thông báo từ giáo viên chủ nhiệm'], 2, 'Đây có thể là thông báo học tập bình thường. Em nên kiểm tra lại qua kênh liên lạc chính thức của lớp.'), ('Lời nhắc phòng tránh lừa đảo', 'Giáo viên nhắc học sinh không chia sẻ mã OTP và không mở đường liên kết lạ.', ['Đọc và ghi nhớ lời nhắc an toàn', 'Gửi mã OTP để xác nhận đã đọc', 'Chuyển tiền để chứng minh đã hiểu'], 0, 'Đây là nội dung giáo dục về an toàn số, không phải yêu cầu cung cấp thông tin bí mật.'), ('Tài khoản mạng xã hội bị chiếm', 'Em phát hiện tài khoản mạng xã hội của mình tự gửi những tin nhắn lạ cho bạn bè.', ['Bỏ qua vì nghĩ không có gì nghiêm trọng', 'Đổi mật khẩu qua ứng dụng chính thức và báo người lớn', 'Gửi mật khẩu cho người lạ để nhờ sửa'], 1, 'Hãy đổi mật khẩu, kiểm tra phiên đăng nhập và cảnh báo bạn bè. Nhờ người lớn hỗ trợ nếu cần.'), ('Người lạ hỏi địa chỉ', 'Một người mới quen trên mạng hỏi địa chỉ nhà và thời gian em ở nhà một mình.', ['Gửi vị trí hiện tại cho người đó', 'Chụp ảnh nhà và gửi ngay', 'Không chia sẻ thông tin riêng tư và báo người lớn nếu bị ép'], 2, 'Địa chỉ và lịch sinh hoạt là thông tin riêng tư. Không chia sẻ cho người lạ trên mạng.'), ('Mua hàng trên mạng', 'Một tài khoản bán hàng yêu cầu em chuyển tiền đặt cọc trước khi cho xem thông tin sản phẩm.', ['Kiểm tra người bán và hỏi người lớn trước khi giao dịch', 'Chuyển tiền đặt cọc ngay', 'Gửi mật khẩu tài khoản ngân hàng'], 0, 'Hãy xác minh người bán, sản phẩm và điều kiện giao dịch trước khi chuyển tiền.')]
+
+    with situation_tab:
+        st.subheader('🎭 Góc tình huống – Nếu là em, em sẽ làm gì?')
+        st.write('Có **20 tình huống an toàn trên mạng** để em luyện cách xử lý an toàn.')
+        names = [item[0] for item in SITUATIONS]
+        selected = st.selectbox('Chọn tình huống', names, key='situation_name_33')
+        idx = names.index(selected)
+        name, scenario, choices, correct, lesson = SITUATIONS[idx]
+        st.info(scenario)
+        with st.form(key=f'situation_form_33_{idx}'):
+            answer = st.radio('Em sẽ làm gì?', choices, index=None, key=f'situation_answer_33_{idx}')
+            checked = st.form_submit_button('KIỂM TRA CÁCH XỬ LÝ')
+        if checked:
+            if answer is None:
+                st.warning('Em hãy chọn một cách xử lý trước nhé.')
+            elif answer == choices[correct]:
+                st.success('🎉 Chính xác! Em đã chọn cách xử lý an toàn.')
+                st.write('**Lời khuyên:** ' + lesson)
+            else:
+                st.warning('⚠️ Cách xử lý này có thể khiến em gặp rủi ro.')
+                st.write('**Cách xử lý phù hợp:** ' + choices[correct])
+                st.write('**Lời khuyên:** ' + lesson)
+        st.caption('Các tình huống dùng để luyện kỹ năng, không phải dữ liệu kiểm thử AI.')
 
 
-# Tư vấn theo quy tắc: không dùng mô hình phân loại tin lừa đảo để chẩn đoán
-# tình huống bạo lực, sức khỏe tâm thần hoặc nguy hiểm cá nhân.
-def advise_student_situation(message):
-    t = normalize(message)
-    # Gom khoảng trắng để nhận diện cả khi học sinh xuống dòng hoặc gõ nhiều dấu cách.
-    t = ' '.join(t.split())
-    def contains(*phrases):
-        return any(p in t for p in phrases)
+    # Tư vấn theo quy tắc: không dùng mô hình phân loại tin lừa đảo để chẩn đoán
+    # tình huống bạo lực, sức khỏe tâm thần hoặc nguy hiểm cá nhân.
+    def advise_student_situation(message):
+        t = normalize(message)
+        # Gom khoảng trắng để nhận diện cả khi học sinh xuống dòng hoặc gõ nhiều dấu cách.
+        t = ' '.join(t.split())
+        def contains(*phrases):
+            return any(p in t for p in phrases)
 
-    # Ưu tiên phát hiện các dấu hiệu khẩn cấp trước mọi nhóm khác.
-    if contains('tu tu', 'tu sat', 'muon chet', 'ket lieu', 'tu lam dau', 'lam hai ban than', 'cat tay'):
-        return ('CẦN HỖ TRỢ NGAY', 'Em đang chia sẻ điều rất đáng quan tâm. Em không cần tự giải quyết một mình.', [
-            'Hãy đến ngay với cha mẹ, thầy cô hoặc người lớn đáng tin cậy và nói rõ em đang cần được giúp đỡ.',
-            'Nếu em có nguy cơ làm hại bản thân ngay lúc này, đừng ở một mình; hãy nhờ người lớn đưa đến cơ sở y tế hoặc gọi cấp cứu 115.',
-            'Nếu khó nói thành lời, em có thể cho người lớn xem nội dung em vừa viết.'
-        ])
-    if contains('bi xam hai', 'xam hai tinh duc', 'cuong hiep', 'ep quan he', 'so mo', 'dung cham vung kin'):
-        return ('CẦN HỖ TRỢ NGAY', 'Đây có thể là tình huống xâm hại nghiêm trọng.', [
-            'Rời khỏi người hoặc nơi khiến em không an toàn nếu có thể.',
-            'Báo ngay cho người lớn đáng tin cậy không liên quan đến hành vi xâm hại; em có thể gọi Tổng đài bảo vệ trẻ em 111.',
-            'Nếu đang nguy hiểm trực tiếp, hãy nhờ người lớn gọi 113 hoặc đến nơi có người hỗ trợ. Không tự đối chất.'
-        ])
-    # Nhận diện dụ dỗ trực tuyến: kết hợp ngữ cảnh, không chỉ một từ khóa.
-    online_person = contains('qua game', 'qua tro choi', 'choi game', 'tren game',
-        'quen tren mang', 'quen qua mang', 'nguoi quen tren mang', 'nguoi quen qua mang',
-        'nguoi la tren mang', 'ban tren mang', 'ban qua mang', 'nguoi la',
-        'chua gap ngoai doi', 'chua tung gap', 'moi quen online')
-    meet_request = contains('ru em den', 'ru em toi', 'ru em di', 'ru toi den',
-        'hen gap', 'gap mat', 'den nha', 'toi nha', 'qua nha', 'di choi',
-        'di theo', 'ru den nha', 'ru toi nha', 'moi den nha', 'moi toi nha',
-        'ru em qua', 'ru em sang')
-    secrecy = contains('giau bo me', 'giau cha me', 'giau gia dinh', 'khong duoc ke',
-        'khong duoc noi', 'khong duoc bao', 'dung noi voi', 'dung ke voi',
-        'khong cho bo me biet', 'khong cho cha me biet', 'khong cho ai biet',
-        'giu bi mat', 'khong de bo me biet', 'khong de cha me biet')
-    gifts = contains('tang dien thoai', 'tang qua', 'cho dien thoai', 'cho qua',
-        'hua tang', 'se tang', 'dien thoai moi', 'qua dat tien', 'nap the',
-        'vat pham game', 'tang iphone')
-    if (online_person and meet_request and (secrecy or gifts)) or (meet_request and secrecy and gifts):
-        return ('NGUY CƠ CAO',
-            'Có dấu hiệu dụ dỗ gặp mặt không an toàn: người quen qua mạng hoặc lời hứa tặng quà đi kèm yêu cầu giữ bí mật. Chưa thể xác minh danh tính hay ý định người đó.', [
-            'Không đến điểm hẹn, không đi theo hoặc gặp riêng người này, kể cả khi họ hứa tặng quà.',
-            'Nói ngay với cha mẹ, giáo viên chủ nhiệm hoặc người lớn đáng tin cậy; cho họ xem tin nhắn để cùng xử lý.',
-            'Không gửi địa chỉ, vị trí, lịch học, hình ảnh riêng tư hoặc thông tin cá nhân; không nhận quà để đổi lấy việc giữ bí mật.',
-            'Nếu an toàn, giữ lại tin nhắn và tài khoản làm bằng chứng; nhờ người lớn hỗ trợ chặn hoặc báo cáo tài khoản.',
-            'Nếu người đó tìm đến, theo dõi hoặc đe dọa, đến nơi có người lớn hỗ trợ ngay; gọi 113 khi nguy hiểm trực tiếp, hoặc 111 để được tư vấn bảo vệ trẻ em.'
-        ])
-    if online_person and meet_request:
-        return ('CẦN XÁC MINH', 'Lời mời gặp mặt từ người chỉ quen trên mạng cần được kiểm tra với người lớn trước; không thể xác minh người đó qua lời kể.', [
-            'Không tự đi gặp người chỉ quen trên mạng hoặc cung cấp địa chỉ, lịch trình cá nhân.',
-            'Nói với cha mẹ hoặc thầy cô và nhờ họ kiểm tra, hỗ trợ quyết định.',
-            'Nếu người đó yêu cầu giấu gia đình, dụ bằng quà hoặc gây áp lực, ngừng liên hệ và báo ngay cho người lớn.'
-        ])
-    if meet_request and secrecy:
-        return ('NGUY CƠ CAO', 'Lời mời đi gặp kèm yêu cầu giấu người lớn là dấu hiệu đáng lo ngại; cần ưu tiên an toàn.', [
-            'Không đi gặp riêng hoặc giữ bí mật cuộc hẹn với người lớn.',
-            'Báo ngay cho cha mẹ hoặc giáo viên đáng tin cậy và cho họ xem lời nhắn.',
-            'Không chia sẻ địa chỉ, vị trí hoặc lịch trình; tìm nơi an toàn nếu bị ép buộc.'
-        ])
+        # Ưu tiên phát hiện các dấu hiệu khẩn cấp trước mọi nhóm khác.
+        if contains('tu tu', 'tu sat', 'muon chet', 'ket lieu', 'tu lam dau', 'lam hai ban than', 'cat tay'):
+            return ('CẦN HỖ TRỢ NGAY', 'Em đang chia sẻ điều rất đáng quan tâm. Em không cần tự giải quyết một mình.', [
+                'Hãy đến ngay với cha mẹ, thầy cô hoặc người lớn đáng tin cậy và nói rõ em đang cần được giúp đỡ.',
+                'Nếu em có nguy cơ làm hại bản thân ngay lúc này, đừng ở một mình; hãy nhờ người lớn đưa đến cơ sở y tế hoặc gọi cấp cứu 115.',
+                'Nếu khó nói thành lời, em có thể cho người lớn xem nội dung em vừa viết.'
+            ])
+        if contains('bi xam hai', 'xam hai tinh duc', 'cuong hiep', 'ep quan he', 'so mo', 'dung cham vung kin'):
+            return ('CẦN HỖ TRỢ NGAY', 'Đây có thể là tình huống xâm hại nghiêm trọng.', [
+                'Rời khỏi người hoặc nơi khiến em không an toàn nếu có thể.',
+                'Báo ngay cho người lớn đáng tin cậy không liên quan đến hành vi xâm hại; em có thể gọi Tổng đài bảo vệ trẻ em 111.',
+                'Nếu đang nguy hiểm trực tiếp, hãy nhờ người lớn gọi 113 hoặc đến nơi có người hỗ trợ. Không tự đối chất.'
+            ])
+        # Nhận diện dụ dỗ trực tuyến: kết hợp ngữ cảnh, không chỉ một từ khóa.
+        online_person = contains('qua game', 'qua tro choi', 'choi game', 'tren game',
+            'quen tren mang', 'quen qua mang', 'nguoi quen tren mang', 'nguoi quen qua mang',
+            'nguoi la tren mang', 'ban tren mang', 'ban qua mang', 'nguoi la',
+            'chua gap ngoai doi', 'chua tung gap', 'moi quen online')
+        meet_request = contains('ru em den', 'ru em toi', 'ru em di', 'ru toi den',
+            'hen gap', 'gap mat', 'den nha', 'toi nha', 'qua nha', 'di choi',
+            'di theo', 'ru den nha', 'ru toi nha', 'moi den nha', 'moi toi nha',
+            'ru em qua', 'ru em sang')
+        secrecy = contains('giau bo me', 'giau cha me', 'giau gia dinh', 'khong duoc ke',
+            'khong duoc noi', 'khong duoc bao', 'dung noi voi', 'dung ke voi',
+            'khong cho bo me biet', 'khong cho cha me biet', 'khong cho ai biet',
+            'giu bi mat', 'khong de bo me biet', 'khong de cha me biet')
+        gifts = contains('tang dien thoai', 'tang qua', 'cho dien thoai', 'cho qua',
+            'hua tang', 'se tang', 'dien thoai moi', 'qua dat tien', 'nap the',
+            'vat pham game', 'tang iphone')
+        if (online_person and meet_request and (secrecy or gifts)) or (meet_request and secrecy and gifts):
+            return ('NGUY CƠ CAO',
+                'Có dấu hiệu dụ dỗ gặp mặt không an toàn: người quen qua mạng hoặc lời hứa tặng quà đi kèm yêu cầu giữ bí mật. Chưa thể xác minh danh tính hay ý định người đó.', [
+                'Không đến điểm hẹn, không đi theo hoặc gặp riêng người này, kể cả khi họ hứa tặng quà.',
+                'Nói ngay với cha mẹ, giáo viên chủ nhiệm hoặc người lớn đáng tin cậy; cho họ xem tin nhắn để cùng xử lý.',
+                'Không gửi địa chỉ, vị trí, lịch học, hình ảnh riêng tư hoặc thông tin cá nhân; không nhận quà để đổi lấy việc giữ bí mật.',
+                'Nếu an toàn, giữ lại tin nhắn và tài khoản làm bằng chứng; nhờ người lớn hỗ trợ chặn hoặc báo cáo tài khoản.',
+                'Nếu người đó tìm đến, theo dõi hoặc đe dọa, đến nơi có người lớn hỗ trợ ngay; gọi 113 khi nguy hiểm trực tiếp, hoặc 111 để được tư vấn bảo vệ trẻ em.'
+            ])
+        if online_person and meet_request:
+            return ('CẦN XÁC MINH', 'Lời mời gặp mặt từ người chỉ quen trên mạng cần được kiểm tra với người lớn trước; không thể xác minh người đó qua lời kể.', [
+                'Không tự đi gặp người chỉ quen trên mạng hoặc cung cấp địa chỉ, lịch trình cá nhân.',
+                'Nói với cha mẹ hoặc thầy cô và nhờ họ kiểm tra, hỗ trợ quyết định.',
+                'Nếu người đó yêu cầu giấu gia đình, dụ bằng quà hoặc gây áp lực, ngừng liên hệ và báo ngay cho người lớn.'
+            ])
+        if meet_request and secrecy:
+            return ('NGUY CƠ CAO', 'Lời mời đi gặp kèm yêu cầu giấu người lớn là dấu hiệu đáng lo ngại; cần ưu tiên an toàn.', [
+                'Không đi gặp riêng hoặc giữ bí mật cuộc hẹn với người lớn.',
+                'Báo ngay cho cha mẹ hoặc giáo viên đáng tin cậy và cho họ xem lời nhắn.',
+                'Không chia sẻ địa chỉ, vị trí hoặc lịch trình; tìm nơi an toàn nếu bị ép buộc.'
+            ])
 
-    # Phân loại nguy cơ cao trước bắt nạt thông thường; hỗ trợ nhiều cách diễn đạt.
-    violence_phrases = (
-        'de doa danh', 'doa danh', 'se danh', 'danh em', 'danh toi', 'danh no',
-        'doi danh', 'chan danh', 'bi danh', 'danh hoi dong', 'cam dao',
-        'dao de doa', 'bat coc', 'giet em', 'giet toi', 'danh sau gio hoc',
-        'ep di theo', 'cho danh', 'hen danh', 'xu em', 'xu toi',
-        'danh chet', 'dap em', 'danh vo mat', 'doi o cong truong',
-        'chan duong danh', 'cam gay danh', 'doa giet', 'se giet',
-        'danh cho mot tran', 'tim em de danh', 'danh sau tan hoc',
-        'khong duoc mach', 'neu mach co', 'neu noi voi co', 'danh neu'
-    )
-    if contains(*violence_phrases) or (
-        contains('de doa', 'doa nat', 'uy hiep') and
-        contains('danh', 'bao luc', 'giet', 'chan duong', 'sau gio hoc')
-    ):
-        online_harassment = contains('facebook', 'dang anh', 'lay anh', 'che gieu', 'mang xa hoi', 'tiktok', 'phat tan', 'dang bai')
-        explanation = ('Có dấu hiệu đe dọa bạo lực' +
-            (' kết hợp bắt nạt hoặc đăng hình ảnh trên mạng' if online_harassment else '') +
-            '. An toàn của em cần được ưu tiên; ứng dụng không thể xác minh mức độ nguy hiểm thực tế.')
-        steps = [
-            'Không gặp riêng hoặc tự đối chất với người đe dọa; tránh đi một mình, nhất là sau giờ học.',
-            'Báo ngay cho cha mẹ, giáo viên chủ nhiệm hoặc người lớn đáng tin cậy; nhờ người lớn giúp em có nơi an toàn và phương án đi lại.',
-            'Nếu an toàn, lưu tin nhắn, ảnh chụp màn hình, thời gian và đường dẫn bài đăng làm bằng chứng; không chia sẻ lại hình ảnh gây tổn thương.',
-        ]
-        if online_harassment:
-            steps.append('Nhờ người lớn hỗ trợ báo cáo bài đăng hoặc tài khoản vi phạm trên nền tảng; không bình luận đối đầu hay lan truyền bài đăng.')
-        steps.append('Nếu đang có nguy hiểm trực tiếp, đến nơi có người hỗ trợ và gọi 113; trẻ em có thể gọi 111 để được tư vấn, bảo vệ.')
-        return ('NGUY CƠ CAO', explanation, steps)
-    if contains('tong tien', 'doa tung anh', 'phat tan anh', 'anh nhay cam', 'anh rieng tu', 'quay clip', 'bi ep gui anh', 'doa dang anh', 'doa dua anh len mang', 'ep gui hinh', 'ep gui clip'):
-        return ('NGUY CƠ CAO', 'Có dấu hiệu đe dọa, ép buộc hoặc xâm phạm quyền riêng tư.', [
-            'Không gửi thêm ảnh, tiền hoặc thông tin riêng tư; không tự thương lượng một mình.',
-            'Lưu bằng chứng ở nơi an toàn, chặn và báo cáo tài khoản sau khi đã lưu bằng chứng.',
-            'Báo ngay cho cha mẹ, giáo viên hoặc người lớn đáng tin cậy; có thể gọi 111 để được hướng dẫn.'
+        # Phân loại nguy cơ cao trước bắt nạt thông thường; hỗ trợ nhiều cách diễn đạt.
+        violence_phrases = (
+            'de doa danh', 'doa danh', 'se danh', 'danh em', 'danh toi', 'danh no',
+            'doi danh', 'chan danh', 'bi danh', 'danh hoi dong', 'cam dao',
+            'dao de doa', 'bat coc', 'giet em', 'giet toi', 'danh sau gio hoc',
+            'ep di theo', 'cho danh', 'hen danh', 'xu em', 'xu toi',
+            'danh chet', 'dap em', 'danh vo mat', 'doi o cong truong',
+            'chan duong danh', 'cam gay danh', 'doa giet', 'se giet',
+            'danh cho mot tran', 'tim em de danh', 'danh sau tan hoc',
+            'khong duoc mach', 'neu mach co', 'neu noi voi co', 'danh neu'
+        )
+        if contains(*violence_phrases) or (
+            contains('de doa', 'doa nat', 'uy hiep') and
+            contains('danh', 'bao luc', 'giet', 'chan duong', 'sau gio hoc')
+        ):
+            online_harassment = contains('facebook', 'dang anh', 'lay anh', 'che gieu', 'mang xa hoi', 'tiktok', 'phat tan', 'dang bai')
+            explanation = ('Có dấu hiệu đe dọa bạo lực' +
+                (' kết hợp bắt nạt hoặc đăng hình ảnh trên mạng' if online_harassment else '') +
+                '. An toàn của em cần được ưu tiên; ứng dụng không thể xác minh mức độ nguy hiểm thực tế.')
+            steps = [
+                'Không gặp riêng hoặc tự đối chất với người đe dọa; tránh đi một mình, nhất là sau giờ học.',
+                'Báo ngay cho cha mẹ, giáo viên chủ nhiệm hoặc người lớn đáng tin cậy; nhờ người lớn giúp em có nơi an toàn và phương án đi lại.',
+                'Nếu an toàn, lưu tin nhắn, ảnh chụp màn hình, thời gian và đường dẫn bài đăng làm bằng chứng; không chia sẻ lại hình ảnh gây tổn thương.',
+            ]
+            if online_harassment:
+                steps.append('Nhờ người lớn hỗ trợ báo cáo bài đăng hoặc tài khoản vi phạm trên nền tảng; không bình luận đối đầu hay lan truyền bài đăng.')
+            steps.append('Nếu đang có nguy hiểm trực tiếp, đến nơi có người hỗ trợ và gọi 113; trẻ em có thể gọi 111 để được tư vấn, bảo vệ.')
+            return ('NGUY CƠ CAO', explanation, steps)
+        if contains('tong tien', 'doa tung anh', 'phat tan anh', 'anh nhay cam', 'anh rieng tu', 'quay clip', 'bi ep gui anh', 'doa dang anh', 'doa dua anh len mang', 'ep gui hinh', 'ep gui clip'):
+            return ('NGUY CƠ CAO', 'Có dấu hiệu đe dọa, ép buộc hoặc xâm phạm quyền riêng tư.', [
+                'Không gửi thêm ảnh, tiền hoặc thông tin riêng tư; không tự thương lượng một mình.',
+                'Lưu bằng chứng ở nơi an toàn, chặn và báo cáo tài khoản sau khi đã lưu bằng chứng.',
+                'Báo ngay cho cha mẹ, giáo viên hoặc người lớn đáng tin cậy; có thể gọi 111 để được hướng dẫn.'
+            ])
+        if contains('ep gui anh nhay cam', 'ep gui anh khoa than', 'doi anh nong', 'doa tung clip', 'doa tung hinh', 'ep quay clip', 'ep chup anh nhay cam'):
+            return ('NGUY CƠ CAO', 'Có dấu hiệu ép buộc hoặc đe dọa liên quan đến hình ảnh riêng tư.', [
+                'Không gửi thêm ảnh, clip, tiền hoặc thông tin cá nhân; không gặp riêng hay tự thương lượng với người đe dọa.',
+                'Lưu bằng chứng tin nhắn và tài khoản ở nơi an toàn, nhưng không phát tán hình ảnh nhạy cảm.',
+                'Báo ngay cho người lớn đáng tin cậy; trẻ em có thể gọi 111. Nếu nguy hiểm trực tiếp, gọi 113.'
+            ])
+        if contains('bat nat', 'co lap', 'tay chay', 'che gieu', 'noi xau', 'lang ma', 'xuc pham', 'chui boi', 'bi treu', 'bi choc'):
+            return ('CẦN QUAN TÂM', 'Có dấu hiệu bắt nạt hoặc gây tổn thương trong quan hệ bạn bè.', [
+                'Em không cần chịu đựng một mình. Hãy chia sẻ với giáo viên chủ nhiệm, cha mẹ hoặc người lớn đáng tin cậy.',
+                'Ghi lại sự việc, lưu tin nhắn hoặc đường dẫn bài đăng nếu có; nhờ người lớn hỗ trợ báo cáo nội dung vi phạm, tránh đáp trả bằng xúc phạm hoặc bạo lực.',
+                'Nếu có đe dọa hoặc nguy cơ bị đánh, hãy ưu tiên đến nơi an toàn và báo ngay cho người lớn.'
+            ])
+        # Cuộc gọi lạ, im lặng, gọi liên tục: không tự kết luận là lừa đảo.
+        if contains('goi dien', 'cuoc goi', 'so la goi', 'so dien thoai la', 'dien thoai la', 'nhay may', 'goi nhieu lan', 'goi lien tuc', 'goi hoai', 'goi ma khong noi', 'khong nghe ai noi', 'dau so', 'so may la'):
+            return ('CẦN QUAN TÂM', 'Em mô tả những cuộc gọi bất thường hoặc làm phiền. Chưa đủ căn cứ kết luận người gọi là ai hay có lừa đảo hay không.', [
+                'Không gọi lại số lạ chỉ vì tò mò; không cung cấp mã OTP, mật khẩu, địa chỉ hoặc thông tin cá nhân.',
+                'Nếu tiếp tục bị làm phiền, ghi lại thời điểm và tần suất cuộc gọi, chặn số và báo cuộc gọi rác qua chức năng của điện thoại hoặc nhà mạng.',
+                'Nhờ cha mẹ hoặc người lớn đáng tin cậy hỗ trợ. Nếu người gọi đe dọa, tống tiền hoặc biết thông tin riêng tư của em, hãy báo ngay cho người lớn và giữ bằng chứng.'
+            ])
+        if contains('gia danh', 'mao danh', 'cong an goi', 'nhan vien ngan hang', 'nhan vien giao hang', 'yeu cau cai app', 'cai ung dung la', 'quet ma qr', 'qr la'):
+            return ('CẦN XÁC MINH', 'Có dấu hiệu liên hệ giả danh hoặc yêu cầu thao tác có thể gây rủi ro.', [
+                'Không làm theo yêu cầu cài ứng dụng, quét mã QR, chuyển tiền hoặc cung cấp OTP qua cuộc gọi hay tin nhắn chưa xác minh.',
+                'Ngắt liên lạc và tự tìm số điện thoại chính thức của cơ quan, đơn vị để xác minh; không gọi theo số người lạ cung cấp.',
+                'Nhờ cha mẹ hoặc thầy cô kiểm tra cùng. Nếu đã cung cấp thông tin tài khoản, báo ngay cho ngân hàng hoặc đơn vị liên quan qua kênh chính thức.'
+            ])
+        if contains('bi theo doi', 'theo doi em', 'nguoi la bam theo', 'nguoi la ru di', 'ru len xe', 'hen gap mot minh'):
+            return ('NGUY CƠ CAO', 'Có dấu hiệu tiếp cận hoặc theo dõi khiến em có thể không an toàn.', [
+                'Không đi theo người lạ, không đến điểm hẹn một mình; di chuyển đến nơi đông người hoặc nơi có người lớn đáng tin cậy.',
+                'Báo ngay cho cha mẹ, thầy cô hoặc bảo vệ gần nhất; chia sẻ vị trí với người thân qua kênh riêng.',
+                'Nếu có nguy hiểm trực tiếp, nhờ người lớn gọi 113; trẻ em có thể gọi 111 để được hỗ trợ.'
+            ])
+        if contains('bi hack', 'mat nick', 'chiem tai khoan', 'lo mat khau', 'lo otp', 'tai khoan bi danh cap'):
+            return ('CẦN XÁC MINH', 'Có dấu hiệu tài khoản hoặc thông tin đăng nhập bị xâm phạm.', [
+                'Đổi mật khẩu ngay từ thiết bị tin cậy, đăng xuất các phiên lạ và bật xác thực hai bước nếu còn truy cập được.',
+                'Không cung cấp thêm mã OTP hay mật khẩu cho người tự xưng hỗ trợ; liên hệ bộ phận hỗ trợ chính thức của dịch vụ.',
+                'Báo cho cha mẹ hoặc thầy cô nếu có tin nhắn mạo danh gửi từ tài khoản của em.'
+            ])
+        if contains('otp', 'mat khau', 'chuyen tien', 'trung thuong', 'hoc bong', 'link la', 'duong link', 'lua dao', 'tai khoan bi khoa', 'ma xac thuc'):
+            return ('CẦN XÁC MINH', 'Nội dung có thể liên quan đến nguy cơ lừa đảo hoặc lộ thông tin trên mạng.', [
+                'Không cung cấp mã OTP, mật khẩu, giấy tờ cá nhân hoặc chuyển tiền khi chưa xác minh.',
+                'Không bấm đường dẫn lạ. Hãy kiểm tra bằng kênh chính thức và hỏi thầy cô hoặc cha mẹ.',
+                'Em có thể dùng mục “Kiểm tra tin” để xem thêm các dấu hiệu lừa đảo; kết quả chỉ để tham khảo.'
+            ])
+        if contains('buon', 'lo lang', 'so hai', 'ap luc', 'stress', 'khong ai hieu', 'co don', 'mat ngu'):
+            return ('CẦN QUAN TÂM', 'Em có thể đang gặp chuyện khiến mình buồn hoặc lo lắng.', [
+                'Hãy chia sẻ cụ thể với cha mẹ, thầy cô, nhân viên tư vấn học đường hoặc người lớn em tin tưởng.',
+                'Nếu em thấy không an toàn hoặc có ý nghĩ làm hại bản thân, hãy tìm người lớn hỗ trợ ngay.',
+                'Ứng dụng không thể đánh giá tình trạng tâm lý hay thay thế người tư vấn chuyên môn.'
+            ])
+        # Nhóm tích cực: chỉ xét sau khi đã loại trừ các dấu hiệu nguy cơ ở trên.
+        # Không coi một lời mời học nhóm thông thường là dấu hiệu đe dọa.
+        study_invite = contains('hoc nhom', 'cung hoc', 'on bai chung', 'ru em hoc', 'ru toi hoc', 'lam bai tap chung')
+        friendly_context = contains('ban', 'ban hoc', 'ban cung lop', 'ban than', 'co giao', 'thay giao', 'chuc mung', 'duoc khen')
+        unknown_contact = contains('nguoi la', 'nguoi moi quen tren mang', 'khong quen', 'chua tung gap', 'nguoi quen qua mang', 'tai khoan la')
+        suspicious_invite = contains('mot minh', 'noi vang', 'khach san', 'nha nghi', 'giau bo me', 'khong cho ai biet', 'sau nua dem', 'chuyen tien', 'gui anh')
+        if study_invite and friendly_context and not unknown_contact and not suspicious_invite:
+            return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Đây có vẻ là lời mời học nhóm tích cực, chưa thấy dấu hiệu nguy hiểm trong thông tin em cung cấp.', [
+                'Em có thể đồng ý nếu biết rõ người bạn và cảm thấy thoải mái; em cũng có quyền từ chối nếu không muốn.',
+                'Thống nhất thời gian và địa điểm học phù hợp, ưu tiên trường học, thư viện hoặc nơi quen thuộc; báo cho gia đình khi cần.',
+                'Nếu lời mời thay đổi bất thường, có yêu cầu giữ bí mật hoặc khiến em không an tâm, hãy hỏi người lớn đáng tin cậy trước.'
+            ])
+        if contains('duoc khen', 'diem tot', 'diem cao', 'chuc mung', 'giup do ban', 'lam viec tot', 'tham gia cau lac bo') and not unknown_contact and not suspicious_invite:
+            return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Em đang kể về một trải nghiệm học tập hoặc quan hệ bạn bè tích cực; chưa thấy dấu hiệu nguy hiểm trong mô tả.', [
+                'Em có thể vui vẻ đón nhận lời khen và tiếp tục phát huy những việc làm tích cực.',
+                'Trao đổi lịch sự, tôn trọng sự tự nguyện của mình và của bạn bè.',
+                'Nếu xuất hiện điều khiến em khó chịu hoặc không an toàn, hãy chia sẻ với người lớn đáng tin cậy.'
+            ])
+        if study_invite and unknown_contact:
+            return ('CẦN XÁC MINH', 'Lời mời học nhóm đến từ người chưa quen rõ ngoài đời; cần xác minh trước khi gặp mặt.', [
+                'Không hẹn gặp riêng người mới quen qua mạng và không chia sẻ địa chỉ, lịch trình hay thông tin cá nhân.',
+                'Hỏi cha mẹ hoặc thầy cô; nếu thực sự cần học nhóm, ưu tiên nhóm có bạn học quen biết và địa điểm công khai.',
+                'Nếu người đó thúc ép giữ bí mật, gửi ảnh hoặc chuyển tiền, hãy dừng liên hệ và báo người lớn.'
+            ])
+        return ('CHƯA ĐỦ THÔNG TIN', 'Ứng dụng chưa nhận diện chắc chắn tình huống của em; điều này không có nghĩa là an toàn.', [
+            'Hãy nói rõ sự việc với thầy cô, cha mẹ hoặc người lớn đáng tin cậy để được hỗ trợ phù hợp.',
+            'Không đưa thông tin cá nhân thật lên ứng dụng. Nếu có đe dọa hoặc nguy hiểm, hãy tìm sự trợ giúp ngay.',
+            'Ứng dụng hiện chỉ tư vấn theo các nhóm dấu hiệu đã lập trình, chưa hiểu được mọi cách diễn đạt.'
         ])
-    if contains('ep gui anh nhay cam', 'ep gui anh khoa than', 'doi anh nong', 'doa tung clip', 'doa tung hinh', 'ep quay clip', 'ep chup anh nhay cam'):
-        return ('NGUY CƠ CAO', 'Có dấu hiệu ép buộc hoặc đe dọa liên quan đến hình ảnh riêng tư.', [
-            'Không gửi thêm ảnh, clip, tiền hoặc thông tin cá nhân; không gặp riêng hay tự thương lượng với người đe dọa.',
-            'Lưu bằng chứng tin nhắn và tài khoản ở nơi an toàn, nhưng không phát tán hình ảnh nhạy cảm.',
-            'Báo ngay cho người lớn đáng tin cậy; trẻ em có thể gọi 111. Nếu nguy hiểm trực tiếp, gọi 113.'
-        ])
-    if contains('bat nat', 'co lap', 'tay chay', 'che gieu', 'noi xau', 'lang ma', 'xuc pham', 'chui boi', 'bi treu', 'bi choc'):
-        return ('CẦN QUAN TÂM', 'Có dấu hiệu bắt nạt hoặc gây tổn thương trong quan hệ bạn bè.', [
-            'Em không cần chịu đựng một mình. Hãy chia sẻ với giáo viên chủ nhiệm, cha mẹ hoặc người lớn đáng tin cậy.',
-            'Ghi lại sự việc, lưu tin nhắn hoặc đường dẫn bài đăng nếu có; nhờ người lớn hỗ trợ báo cáo nội dung vi phạm, tránh đáp trả bằng xúc phạm hoặc bạo lực.',
-            'Nếu có đe dọa hoặc nguy cơ bị đánh, hãy ưu tiên đến nơi an toàn và báo ngay cho người lớn.'
-        ])
-    # Cuộc gọi lạ, im lặng, gọi liên tục: không tự kết luận là lừa đảo.
-    if contains('goi dien', 'cuoc goi', 'so la goi', 'so dien thoai la', 'dien thoai la', 'nhay may', 'goi nhieu lan', 'goi lien tuc', 'goi hoai', 'goi ma khong noi', 'khong nghe ai noi', 'dau so', 'so may la'):
-        return ('CẦN QUAN TÂM', 'Em mô tả những cuộc gọi bất thường hoặc làm phiền. Chưa đủ căn cứ kết luận người gọi là ai hay có lừa đảo hay không.', [
-            'Không gọi lại số lạ chỉ vì tò mò; không cung cấp mã OTP, mật khẩu, địa chỉ hoặc thông tin cá nhân.',
-            'Nếu tiếp tục bị làm phiền, ghi lại thời điểm và tần suất cuộc gọi, chặn số và báo cuộc gọi rác qua chức năng của điện thoại hoặc nhà mạng.',
-            'Nhờ cha mẹ hoặc người lớn đáng tin cậy hỗ trợ. Nếu người gọi đe dọa, tống tiền hoặc biết thông tin riêng tư của em, hãy báo ngay cho người lớn và giữ bằng chứng.'
-        ])
-    if contains('gia danh', 'mao danh', 'cong an goi', 'nhan vien ngan hang', 'nhan vien giao hang', 'yeu cau cai app', 'cai ung dung la', 'quet ma qr', 'qr la'):
-        return ('CẦN XÁC MINH', 'Có dấu hiệu liên hệ giả danh hoặc yêu cầu thao tác có thể gây rủi ro.', [
-            'Không làm theo yêu cầu cài ứng dụng, quét mã QR, chuyển tiền hoặc cung cấp OTP qua cuộc gọi hay tin nhắn chưa xác minh.',
-            'Ngắt liên lạc và tự tìm số điện thoại chính thức của cơ quan, đơn vị để xác minh; không gọi theo số người lạ cung cấp.',
-            'Nhờ cha mẹ hoặc thầy cô kiểm tra cùng. Nếu đã cung cấp thông tin tài khoản, báo ngay cho ngân hàng hoặc đơn vị liên quan qua kênh chính thức.'
-        ])
-    if contains('bi theo doi', 'theo doi em', 'nguoi la bam theo', 'nguoi la ru di', 'ru len xe', 'hen gap mot minh'):
-        return ('NGUY CƠ CAO', 'Có dấu hiệu tiếp cận hoặc theo dõi khiến em có thể không an toàn.', [
-            'Không đi theo người lạ, không đến điểm hẹn một mình; di chuyển đến nơi đông người hoặc nơi có người lớn đáng tin cậy.',
-            'Báo ngay cho cha mẹ, thầy cô hoặc bảo vệ gần nhất; chia sẻ vị trí với người thân qua kênh riêng.',
-            'Nếu có nguy hiểm trực tiếp, nhờ người lớn gọi 113; trẻ em có thể gọi 111 để được hỗ trợ.'
-        ])
-    if contains('bi hack', 'mat nick', 'chiem tai khoan', 'lo mat khau', 'lo otp', 'tai khoan bi danh cap'):
-        return ('CẦN XÁC MINH', 'Có dấu hiệu tài khoản hoặc thông tin đăng nhập bị xâm phạm.', [
-            'Đổi mật khẩu ngay từ thiết bị tin cậy, đăng xuất các phiên lạ và bật xác thực hai bước nếu còn truy cập được.',
-            'Không cung cấp thêm mã OTP hay mật khẩu cho người tự xưng hỗ trợ; liên hệ bộ phận hỗ trợ chính thức của dịch vụ.',
-            'Báo cho cha mẹ hoặc thầy cô nếu có tin nhắn mạo danh gửi từ tài khoản của em.'
-        ])
-    if contains('otp', 'mat khau', 'chuyen tien', 'trung thuong', 'hoc bong', 'link la', 'duong link', 'lua dao', 'tai khoan bi khoa', 'ma xac thuc'):
-        return ('CẦN XÁC MINH', 'Nội dung có thể liên quan đến nguy cơ lừa đảo hoặc lộ thông tin trên mạng.', [
-            'Không cung cấp mã OTP, mật khẩu, giấy tờ cá nhân hoặc chuyển tiền khi chưa xác minh.',
-            'Không bấm đường dẫn lạ. Hãy kiểm tra bằng kênh chính thức và hỏi thầy cô hoặc cha mẹ.',
-            'Em có thể dùng mục “Kiểm tra tin” để xem thêm các dấu hiệu lừa đảo; kết quả chỉ để tham khảo.'
-        ])
-    if contains('buon', 'lo lang', 'so hai', 'ap luc', 'stress', 'khong ai hieu', 'co don', 'mat ngu'):
-        return ('CẦN QUAN TÂM', 'Em có thể đang gặp chuyện khiến mình buồn hoặc lo lắng.', [
-            'Hãy chia sẻ cụ thể với cha mẹ, thầy cô, nhân viên tư vấn học đường hoặc người lớn em tin tưởng.',
-            'Nếu em thấy không an toàn hoặc có ý nghĩ làm hại bản thân, hãy tìm người lớn hỗ trợ ngay.',
-            'Ứng dụng không thể đánh giá tình trạng tâm lý hay thay thế người tư vấn chuyên môn.'
-        ])
-    # Nhóm tích cực: chỉ xét sau khi đã loại trừ các dấu hiệu nguy cơ ở trên.
-    # Không coi một lời mời học nhóm thông thường là dấu hiệu đe dọa.
-    study_invite = contains('hoc nhom', 'cung hoc', 'on bai chung', 'ru em hoc', 'ru toi hoc', 'lam bai tap chung')
-    friendly_context = contains('ban', 'ban hoc', 'ban cung lop', 'ban than', 'co giao', 'thay giao', 'chuc mung', 'duoc khen')
-    unknown_contact = contains('nguoi la', 'nguoi moi quen tren mang', 'khong quen', 'chua tung gap', 'nguoi quen qua mang', 'tai khoan la')
-    suspicious_invite = contains('mot minh', 'noi vang', 'khach san', 'nha nghi', 'giau bo me', 'khong cho ai biet', 'sau nua dem', 'chuyen tien', 'gui anh')
-    if study_invite and friendly_context and not unknown_contact and not suspicious_invite:
-        return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Đây có vẻ là lời mời học nhóm tích cực, chưa thấy dấu hiệu nguy hiểm trong thông tin em cung cấp.', [
-            'Em có thể đồng ý nếu biết rõ người bạn và cảm thấy thoải mái; em cũng có quyền từ chối nếu không muốn.',
-            'Thống nhất thời gian và địa điểm học phù hợp, ưu tiên trường học, thư viện hoặc nơi quen thuộc; báo cho gia đình khi cần.',
-            'Nếu lời mời thay đổi bất thường, có yêu cầu giữ bí mật hoặc khiến em không an tâm, hãy hỏi người lớn đáng tin cậy trước.'
-        ])
-    if contains('duoc khen', 'diem tot', 'diem cao', 'chuc mung', 'giup do ban', 'lam viec tot', 'tham gia cau lac bo') and not unknown_contact and not suspicious_invite:
-        return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Em đang kể về một trải nghiệm học tập hoặc quan hệ bạn bè tích cực; chưa thấy dấu hiệu nguy hiểm trong mô tả.', [
-            'Em có thể vui vẻ đón nhận lời khen và tiếp tục phát huy những việc làm tích cực.',
-            'Trao đổi lịch sự, tôn trọng sự tự nguyện của mình và của bạn bè.',
-            'Nếu xuất hiện điều khiến em khó chịu hoặc không an toàn, hãy chia sẻ với người lớn đáng tin cậy.'
-        ])
-    if study_invite and unknown_contact:
-        return ('CẦN XÁC MINH', 'Lời mời học nhóm đến từ người chưa quen rõ ngoài đời; cần xác minh trước khi gặp mặt.', [
-            'Không hẹn gặp riêng người mới quen qua mạng và không chia sẻ địa chỉ, lịch trình hay thông tin cá nhân.',
-            'Hỏi cha mẹ hoặc thầy cô; nếu thực sự cần học nhóm, ưu tiên nhóm có bạn học quen biết và địa điểm công khai.',
-            'Nếu người đó thúc ép giữ bí mật, gửi ảnh hoặc chuyển tiền, hãy dừng liên hệ và báo người lớn.'
-        ])
-    return ('CHƯA ĐỦ THÔNG TIN', 'Ứng dụng chưa nhận diện chắc chắn tình huống của em; điều này không có nghĩa là an toàn.', [
-        'Hãy nói rõ sự việc với thầy cô, cha mẹ hoặc người lớn đáng tin cậy để được hỗ trợ phù hợp.',
-        'Không đưa thông tin cá nhân thật lên ứng dụng. Nếu có đe dọa hoặc nguy hiểm, hãy tìm sự trợ giúp ngay.',
-        'Ứng dụng hiện chỉ tư vấn theo các nhóm dấu hiệu đã lập trình, chưa hiểu được mọi cách diễn đạt.'
-    ])
 
 with tab6:
     st.subheader('💬 Góc chia sẻ – Tình huống của em')
