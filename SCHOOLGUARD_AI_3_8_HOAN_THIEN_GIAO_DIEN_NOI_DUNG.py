@@ -112,7 +112,7 @@ def rules(text):
     )
     # Các câu phòng tránh là nội dung an toàn nếu không đồng thời dụ dỗ
     # thực hiện hành động nguy hiểm khác.
-    if safety_instruction and not has('nhung hay', 'tuy nhien hay', 'sau do hay'):
+    if safety_instruction and not has('nhung hay', 'tuy nhien hay', 'sau do hay', 'nhung phai', 'roi hay'):
         return ['Noi dung co dau hieu giao duc/phong tranh'], 'education'
 
     # Dụ dỗ trẻ em gặp người quen qua mạng, tặng quà và/hoặc giấu gia đình.
@@ -122,15 +122,20 @@ def rules(text):
     meeting = has('ru em di', 'ru toi di', 'ru di', 'hen gap', 'gap mat',
                   'di uong nuoc', 'di choi', 'di an', 'di theo', 'den gap',
                   'toi gap', 'den cho', 'cho vang', 'noi vang', 'gap rieng',
-                  'den nha', 'qua nha', 'len xe')
-    secrecy = has('khong ke', 'dung ke', 'khong noi voi', 'dung noi voi',
-                  'khong bao', 'dung bao', 'giau bo me', 'giau cha me',
+                  'den nha', 'qua nha', 'len xe', 'ru gap', 'ru toi', 'moi gap')
+    secrecy = has('khong ke', 'khong duoc ke', 'dung ke', 'khong noi voi', 'khong duoc noi voi', 'dung noi voi',
+                  'khong bao', 'khong duoc bao', 'dung bao', 'giau bo me', 'giau cha me',
                   'khong cho bo me biet', 'khong cho cha me biet',
                   'giu bi mat', 'khong cho ai biet')
     gift = has('tang qua', 'tang em', 'tang dien thoai', 'tang iphone',
                'cho qua', 'cho tien', 'hua tang', 'se tang', 'qua tang',
                'nhan qua', 'nap the', 'kim cuong', 'vat pham')
     if meeting and ((online and (secrecy or gift)) or (secrecy and gift)):
+        findings.append('Du do gap mat va giu bi mat voi nguoi lon')
+
+    # Lời mời gặp riêng kèm giữ bí mật với gia đình cần cảnh báo,
+    # ngay cả khi không nhắc rõ Facebook hay quà tặng.
+    if meeting and secrecy and not any('Du do gap mat' in f for f in findings):
         findings.append('Du do gap mat va giu bi mat voi nguoi lon')
 
     # Đòi OTP/mật khẩu: nhận cả "đưa", "bảo đưa", "đọc", "cho".
@@ -175,7 +180,7 @@ def rules(text):
 
     if findings:
         return findings, 'risk'
-    if learning_context:
+    if safety_instruction or learning_context:
         return ['Noi dung co dau hieu giao duc/phong tranh'], 'education'
     return [], 'none'
 
