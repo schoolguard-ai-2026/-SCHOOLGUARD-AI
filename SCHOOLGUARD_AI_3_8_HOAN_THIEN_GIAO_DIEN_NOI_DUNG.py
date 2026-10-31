@@ -231,6 +231,8 @@ div.stButton > button, div.stFormSubmitButton > button {border-radius: 9px; font
 </style>""", unsafe_allow_html=True)
 st.title("PHẦN MỀM HỖ TRỢ HỌC SINH THCS NHẬN DIỆN NGUY CƠ VÀ ỨNG XỬ AN TOÀN TRÊN KHÔNG GIAN MẠNG")
 st.caption('Nhận diện nguy cơ • Rèn kỹ năng • Bảo vệ bản thân')
+st.caption('🧪 Bản kiểm thử: 3.8 – xác nhận mã mới 31/10/2026')
+
 st.info('Đây là phần mềm học tập sử dụng tình huống giả lập. Không nhập mật khẩu, mã xác thực OTP hoặc thông tin cá nhân thật. Kết quả chỉ mang tính tham khảo, không bảo đảm tin nhắn an toàn.')
 
 tab1, tab2, tab3, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử an toàn mạng', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
