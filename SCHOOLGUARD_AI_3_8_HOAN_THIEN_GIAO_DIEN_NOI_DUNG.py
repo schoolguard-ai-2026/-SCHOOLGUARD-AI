@@ -452,6 +452,32 @@ with tab3:
     def advise_student_situation(message):
         t = normalize(message)
         # Gom khoảng trắng để nhận diện cả khi học sinh xuống dòng hoặc gõ nhiều dấu cách.
+
+    if (
+        any(x in t for x in (
+            'tren mang', 'qua mang', 'facebook',
+            'zalo', 'online', 'tiktok'
+        ))
+        and any(x in t for x in (
+            'quen', 'ket ban', 'nguoi la',
+            'ban nam', 'ban nu', 'ban trai', 'ban gai'
+        ))
+        and any(x in t for x in (
+            'hen gap', 'ru gap', 'gap mat',
+            'di gap', 'ru di choi', 'hen di choi'
+        ))
+    ):
+        return (
+            'NGUY CƠ CAO',
+            'Em không nên tự ý gặp người chỉ quen qua mạng vì chưa thể xác minh danh tính của họ.',
+            [
+                'Không tự ý đi gặp hoặc đến điểm hẹn.',
+                'Hãy kể với cha mẹ hoặc thầy cô để được hỗ trợ.',
+                'Không gửi địa chỉ, vị trí hoặc hình ảnh riêng tư.'
+            ]
+        )
+
+        
         t = ' '.join(t.split())
         def contains(*phrases):
             return any(p in t for p in phrases)
