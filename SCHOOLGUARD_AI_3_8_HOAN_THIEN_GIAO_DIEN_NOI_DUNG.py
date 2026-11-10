@@ -314,6 +314,16 @@ with tab2:
             st.session_state.quiz_option_orders_33 = {j: random.sample(range(3), 3) for j in range(10)}
             st.rerun()
 
+    st.divider()
+    st.subheader('🌐 Trò chơi trực tuyến – Digital World: Thế giới số')
+    st.write('Khám phá trò chơi giáo dục về an toàn trên không gian mạng. Trò chơi mở ở trang bên ngoài.')
+    st.link_button(
+        '🎮 CHƠI NGAY – DIGITAL WORLD',
+        'https://torru.itch.io/digital-world',
+        use_container_width=True
+    )
+    st.caption('Trò chơi Digital World do bên thứ ba phát triển, được liên kết để học sinh tham khảo và luyện tập; không phải chức năng do nhóm phát triển.')
+
 # Bộ kiểm thử minh họa được viết riêng, nhưng chưa đủ độc lập để công bố độ chính xác.
 EXAMPLES = [
     ('Em được chọn nhận học bổng 5 triệu, hãy chuyển trước 200 nghìn phí xác nhận', 1),
