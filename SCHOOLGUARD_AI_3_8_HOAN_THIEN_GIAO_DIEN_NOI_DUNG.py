@@ -98,7 +98,8 @@ def rules(text):
     protective = has(
         "khong yeu cau", "khong thu tien", "khong chia se",
         "khong cung cap", "khong gui", "khong nen",
-        "khong duoc", "dung bam", "dung gui",
+        "khong duoc gui", "khong duoc chia se", "khong duoc cung cap",
+        "khong duoc bam", "dung bam", "dung gui",
         "dung chuyen", "tuyet doi khong", "canh giac",
         "phong tranh", "phong chong", "bao nguoi lon"
     )
@@ -109,7 +110,15 @@ def rules(text):
         "huong dan hoc sinh", "duoc huong dan",
         "gioi thieu nguy co", "nhac rang"
     )
-    if (protective or learning) and not has(
+    # Không để lời dặn giữ bí mật với bố mẹ bị hiểu thành lời giáo dục an toàn.
+    secrecy = has("khong duoc noi voi bo me", "khong duoc noi voi cha me",
+                  "dung noi voi bo me", "dung ke voi bo me", "giau bo me",
+                  "giau gia dinh", "giu bi mat voi bo me", "khong duoc ke voi ai")
+    bait = has("otp", "mat khau", "trung thuong", "nhan qua", "iphone",
+               "hoc bong", "hen gap", "gap rieng", "chuyen tien", "nap tien")
+    if secrecy and bait:
+        findings.append("Yeu cau giau cha me hoac nguoi lon")
+    if (protective or learning) and not (secrecy and bait) and not has(
         "nhung hay", "tuy nhien hay", "sau do hay"
     ):
         return ["Noi dung co dau hieu giao duc/phong tranh"], "education"
@@ -155,7 +164,7 @@ def rules(text):
 
     if has("chuyen tien", "chuyen khoan", "nop phi",
            "dong phi", "dat coc", "thanh toan",
-           "mua the cao", "tra tien") and has(
+           "mua the cao", "tra tien", "chuyen phi") and has(
            "hoc bong", "qua", "thuong", "giai",
            "diem", "phi", "tai khoan ca nhan",
            "khan cap", "nguoi quan tri", "mo khoa"):
@@ -222,6 +231,7 @@ with tab1:
             st.markdown('### 🔍 Vì sao tin nhắn được đánh giá như vậy?')
             if findings:
                 descriptions = {
+                    'Yeu cau giau cha me hoac nguoi lon': 'Người gửi yêu cầu giữ bí mật với cha mẹ hoặc người lớn khi nhận quà hay cung cấp thông tin là dấu hiệu nguy hiểm.',
                     'Yeu cau ma xac thuc hoac ma khoi phuc': 'Tin nhắn yêu cầu mã OTP hoặc mã xác thực. Em tuyệt đối không đưa mã này cho người khác.',
                     'Yeu cau thong tin nhay cam': 'Tin nhắn yêu cầu thông tin riêng tư như mật khẩu, giấy tờ hoặc tài khoản ngân hàng.',
                     'Yeu cau tat tinh nang bao mat': 'Yêu cầu tắt tính năng bảo vệ thiết bị là dấu hiệu đáng cảnh giác.',
