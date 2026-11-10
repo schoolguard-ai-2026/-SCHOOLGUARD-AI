@@ -212,7 +212,7 @@ div.stButton > button, div.stFormSubmitButton > button {border-radius: 9px; font
 st.title("PHẦN MỀM HỖ TRỢ HỌC SINH THCS NHẬN DIỆN NGUY CƠ VÀ ỨNG XỬ AN TOÀN TRÊN KHÔNG GIAN MẠNG")
 st.caption('Nhận diện nguy cơ • Rèn kỹ năng • Bảo vệ bản thân')
 
-tab1, tab2, tab3, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử & Tình huống', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
+tab1, tab2, tab3, tab4, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử & Tình huống', '🌐 Trò chơi trực tuyến', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
 
 with tab1:
     st.subheader('🔎 Kiểm tra mức độ an toàn của tin nhắn')
@@ -314,15 +314,17 @@ with tab2:
             st.session_state.quiz_option_orders_33 = {j: random.sample(range(3), 3) for j in range(10)}
             st.rerun()
 
-    st.divider()
+
+with tab4:
     st.subheader('🌐 Trò chơi trực tuyến – Digital World: Thế giới số')
-    st.write('Khám phá trò chơi giáo dục về an toàn trên không gian mạng. Trò chơi mở ở trang bên ngoài.')
+    st.write('Cùng khám phá các nhiệm vụ về an toàn trên không gian mạng qua trò chơi nhập vai Digital World.')
+    st.info('Nhấn nút bên dưới để mở trò chơi trên trang web bên ngoài. Không cần cài đặt trực tiếp vào SchoolGuard AI.')
     st.link_button(
         '🎮 CHƠI NGAY – DIGITAL WORLD',
         'https://torru.itch.io/digital-world',
         use_container_width=True
     )
-    st.caption('Trò chơi Digital World do bên thứ ba phát triển, được liên kết để học sinh tham khảo và luyện tập; không phải chức năng do nhóm phát triển.')
+    st.caption('Nguồn: Digital World do bên thứ ba phát triển. SchoolGuard AI chỉ cung cấp liên kết học tập bổ trợ; nhóm KHKT không phát triển trò chơi này.')
 
 # Bộ kiểm thử minh họa được viết riêng, nhưng chưa đủ độc lập để công bố độ chính xác.
 EXAMPLES = [
@@ -758,6 +760,7 @@ with tab5:
     st.markdown('**Các hoạt động chính**')
     st.write('🔎 **Kiểm tra tin:** Nhận cảnh báo và hướng dẫn xác minh tin nhắn.')
     st.write('🎮 **Thử thách:** Mỗi lượt trả lời 10 câu hỏi từ ngân hàng 34 câu.')
+    st.write('🌐 **Trò chơi trực tuyến:** Liên kết tới Digital World, trò chơi giáo dục do bên thứ ba phát triển.')
     st.write('🕵️ **Thám tử & Tình huống:** Ngân hàng 100 tin nhắn, mỗi lượt chơi 10 câu ngẫu nhiên; luyện xử lý 100 tình huống.')
     st.write('💬 **Góc chia sẻ:** Học sinh tự nhập tình huống và nhận hướng dẫn ban đầu theo quy tắc; 100 ví dụ tham khảo không có nghĩa phần mềm hiểu chính xác mọi câu tự do.')
     st.markdown('**Công nghệ và giới hạn**')
