@@ -664,6 +664,39 @@ def advise_student_situation(message):
             'Không cung cấp thêm mã OTP hay mật khẩu cho người tự xưng hỗ trợ; liên hệ bộ phận hỗ trợ chính thức của dịch vụ.',
             'Báo cho cha mẹ hoặc thầy cô nếu có tin nhắn mạo danh gửi từ tài khoản của em.'
         ])
+    # 4.9: Nhận diện thêm ba loại tình huống trình diễn thường gặp.
+    # Chỉ nhận diện khi có đủ ngữ cảnh, không khẳng định đã xác minh người gửi.
+    school_notice = contains('nghi hoc', 'lich kiem tra', 'doi lich', 'doi gio',
+        'thong bao cua truong', 'thong bao nha truong', 'lich thi', 'truong se cho')
+    unverified_source = contains('tai khoan la', 'tai khoan facebook khong quen',
+        'khong quen biet', 'nguoi la', 'so la', 'chua thay', 'chua co',
+        'chua duoc', 'khong co thong bao', 'khong ro nguon', 'tin don',
+        'chua xac nhan', 'khong chinh thuc', 'chua chinh thuc')
+    verified_learning_source = contains('nhom hoc tap quen thuoc', 'nhom chinh thuc',
+        'nhom da xac minh', 'giao vien chu nhiem trong nhom lop',
+        'co giao trong nhom lop', 'ban cung lop', 'ban hoc cung lop',
+        'lop truong', 'co giao nhac', 'thay giao nhac')
+    ordinary_learning = contains('mang sach', 'mang sach vo', 'on bai',
+        'nop bai tap', 'hoc tin hoc', 'kiem tra tin hoc', 'lich truc nhat',
+        'lam bai trinh chieu', 'chuan bi bai', 'hoc nhom')
+    # Không coi câu phủ định 'không có link lạ' là lời yêu cầu mở link.
+    positive_t = t.replace('khong co duong link la', '').replace('khong co link la', '')\
+        .replace('khong yeu cau cung cap', '').replace('khong co yeu cau cung cap', '')
+    suspect_demand = any(phrase in positive_t for phrase in ('gui otp', 'cung cap otp', 'ma otp', 'mat khau',
+        'chuyen tien', 'chuyen khoan', 'nop phi', 'dong phi', 'nhan qua',
+        'trung thuong', 'duong link', 'link la', 'dia chi nha',
+        'anh rieng tu', 'giay to tuy than', 'nhan vao lien ket'))
+    if school_notice and unverified_source and not suspect_demand:
+        return ('NGUY CƠ TRUNG BÌNH', 'Thông tin liên quan đến nhà trường nhưng nguồn chưa được xác nhận; chưa thể kết luận thông báo là thật.', [
+            'Chưa vội chia sẻ hoặc làm theo thông báo.',
+            'Hỏi giáo viên chủ nhiệm hoặc đối chiếu kênh thông báo chính thức của nhà trường.'
+        ])
+    if verified_learning_source and ordinary_learning and not suspect_demand and not unverified_source:
+        return ('NGUY CƠ THẤP', 'Đây có vẻ là lời nhắc học tập thông thường từ kênh quen thuộc; chưa thấy dấu hiệu nguy hiểm rõ ràng.', [
+            'Kiểm tra lại người gửi và thời khóa biểu khi cần.',
+            'Không chia sẻ thông tin bảo mật nếu xuất hiện yêu cầu bất thường.'
+        ])
+
     if contains('otp', 'mat khau', 'chuyen tien', 'trung thuong', 'hoc bong', 'link la', 'duong link', 'lua dao', 'tai khoan bi khoa', 'ma xac thuc'):
         return ('CẦN XÁC MINH', 'Nội dung có thể liên quan đến nguy cơ lừa đảo hoặc lộ thông tin trên mạng.', [
             'Không cung cấp mã OTP, mật khẩu, giấy tờ cá nhân hoặc chuyển tiền khi chưa xác minh.',
@@ -741,9 +774,15 @@ with tab6:
             st.warning('Em hãy mô tả rõ hơn một chút (ít nhất 12 ký tự), không cần nêu tên thật nhé.')
         else:
             level, explanation, steps = advise_student_situation(student_story)
+            # Quy đổi các nhãn tư vấn thông thường sang 3 mức nguy cơ hiển thị.
+            # Giữ nguyên cảnh báo khẩn cấp và nhãn chưa đủ dữ kiện để tránh an toàn giả.
+            if level == 'CẦN XÁC MINH':
+                level = 'NGUY CƠ TRUNG BÌNH'
+            elif level == 'TÌNH HUỐNG BÌNH THƯỜNG':
+                level = 'NGUY CƠ THẤP'
             if level in ('CẦN HỖ TRỢ NGAY', 'NGUY CƠ CAO'):
                 st.error('🚨 ' + level)
-            elif level in ('CHƯA ĐỦ THÔNG TIN', 'TÌNH HUỐNG BÌNH THƯỜNG'):
+            elif level in ('CHƯA ĐỦ THÔNG TIN', 'NGUY CƠ THẤP'):
                 st.info('ℹ️ ' + level)
             else:
                 st.warning('⚠️ ' + level)
