@@ -89,104 +89,94 @@ model = train_model()
 
 
 def rules(text):
+    """Quy tắc giáo dục an toàn mạng; mức cảnh báo là dấu hiệu, không phải kết luận thật/giả."""
     t = normalize(str(text))
     findings = []
 
-    def has(*words):
-        return any(w in t for w in words)
+    def has(*phrases):
+        return any(phrase in t for phrase in phrases)
 
-    protective = has(
-        "khong yeu cau", "khong thu tien", "khong chia se",
-        "khong cung cap", "khong gui", "khong nen",
-        "khong duoc gui", "khong duoc chia se", "khong duoc cung cap",
-        "khong duoc bam", "dung bam", "dung gui",
-        "dung chuyen", "tuyet doi khong", "canh giac",
-        "phong tranh", "phong chong", "bao nguoi lon"
+    # Nội dung GIẢNG DẠY / CẢNH BÁO không phải lời dụ làm theo.
+    # Kiểm tra ngữ cảnh này trước để tránh báo động sai khi câu có từ OTP/mật khẩu.
+    educational_context = has(
+        'bai hoc', 'bai tap', 'tiet hoc', 'thao luan', 'tim hieu',
+        'huong dan hoc sinh', 'canh giac', 'phong chong lua dao',
+        'khong chia se', 'khong cung cap', 'dung bam', 'khong bam',
+        'khong duoc gui', 'khong nen gui', 'tuyet doi khong',
+        'khong chuyen tien', 'dung chuyen tien', 'khong dang mat khau'
     )
-    learning = has(
-        "bai hoc", "bai tap", "tiet hoc", "thao luan",
-        "tim hieu", "tuyen truyen", "phan tich vi du",
-        "nhan biet", "giai thich vi sao",
-        "huong dan hoc sinh", "duoc huong dan",
-        "gioi thieu nguy co", "nhac rang"
+    malicious_override = has(
+        'nhung hay', 'tuy nhien hay', 'sau do hay',
+        'khong duoc noi voi bo me', 'giau bo me', 'giau gia dinh',
+        'giu bi mat voi bo me', 'dung ke voi bo me'
     )
-    # Không để lời dặn giữ bí mật với bố mẹ bị hiểu thành lời giáo dục an toàn.
-    secrecy = has("khong duoc noi voi bo me", "khong duoc noi voi cha me",
-                  "dung noi voi bo me", "dung ke voi bo me", "giau bo me",
-                  "giau gia dinh", "giu bi mat voi bo me", "khong duoc ke voi ai")
-    bait = has("otp", "mat khau", "trung thuong", "nhan qua", "iphone",
-               "hoc bong", "hen gap", "gap rieng", "chuyen tien", "nap tien")
-    if secrecy and bait:
-        findings.append("Yeu cau giau cha me hoac nguoi lon")
-    if (protective or learning) and not (secrecy and bait) and not has(
-        "nhung hay", "tuy nhien hay", "sau do hay"
-    ):
-        return ["Noi dung co dau hieu giao duc/phong tranh"], "education"
+    if educational_context and not malicious_override:
+        return ['Noi dung co dau hieu giao duc/phong tranh'], 'education'
 
-    if has("otp", "ma xac thuc", "ma dang nhap",
-           "ma khoi phuc", "ma nhan hang") and has(
-           "gui", "doc", "nhap", "cung cap", "chia se", "chup"):
-        findings.append("Yeu cau ma xac thuc hoac ma khoi phuc")
+    # Dấu hiệu CAO: đánh cắp thông tin bảo mật, ép chuyển tiền, đe dọa,
+    # hoặc thao tác kỹ thuật gây rủi ro nghiêm trọng.
+    request = has('gui', 'nhap', 'dien', 'cung cap', 'chia se', 'doc', 'chup', 'cho toi', 'hay', 'vui long', 'xac minh')
+    if has('otp', 'ma xac thuc', 'ma dang nhap', 'ma khoi phuc', 'ma bao mat') and request:
+        findings.append('Yeu cau ma xac thuc hoac ma khoi phuc')
+    if has('mat khau', 'ma pin', 'so the ngan hang', 'thong tin ngan hang', 'can cuoc', 'cccd', 'giay khai sinh') and request:
+        findings.append('Yeu cau thong tin nhay cam')
+    if has('tat xac thuc', 'tat bao mat', 'tat phan mem diet virus'):
+        findings.append('Yeu cau tat tinh nang bao mat')
+    if has('chia se man hinh', 'dieu khien tu xa', 'ma qr dang nhap', 'quet ma qr dang nhap') and not has('khong chia se', 'khong quet', 'khong cho phep'):
+        findings.append('Nguy co chiem quyen truy cap')
+    if has('apk', 'tep thuc thi', 'file apk', 'ung dung khong ro nguon') and has('cai', 'tai', 'mo', 'dinh kem'):
+        findings.append('Phan mem hoac tep chua xac minh')
+    if has('truy cap tin nhan sms', 'cho phep truy cap tin nhan'):
+        findings.append('Yeu cau quyen truy cap SMS')
+    if has('duong dan rut gon', 'lien ket la', 'link la', 'trang web khong thuoc', 'trang xac thuc cua toi') and has('bam', 'dang nhap', 'nhap', 'xac nhan', 'truy cap', 'mo'):
+        findings.append('Lien ket hoac trang dang nhap dang nghi')
+    if has('anh rieng tu', 'video rieng tu', 'anh nhay cam', 'phat tan', 'tung anh') and has('chuyen tien', 'tra tien', 'neu khong', 'doi tien', 'de doa'):
+        findings.append('De doa, tong tien')
+    if has('khong duoc noi voi bo me', 'giau bo me', 'giau gia dinh', 'giu bi mat voi bo me', 'dung ke voi bo me') and has('qua', 'gap rieng', 'hen gap', 'chuyen tien', 'nap tien', 'otp', 'mat khau'):
+        findings.append('Yeu cau giau cha me hoac nguoi lon')
+    if has('vi tri truc tiep', 'lich o nha mot minh', 'gio o nha mot minh') and request:
+        findings.append('Yeu cau thong tin vi tri rieng tu')
+    if has('chuyen tien', 'chuyen truoc', 'chuyen khoan', 'nop phi', 'dong phi', 'dat coc', 'thanh toan', 'mua the cao', 'nap tien', 'tra phi', 'chuyen phi') and has('hoc bong', 'nhan qua', 'trung thuong', 'nhan thuong', 'giai thuong', 'phi xac nhan', 'phi van chuyen', 'tai khoan ca nhan', 'mo khoa', 'nhan viec', 'kiem tien'):
+        findings.append('Yeu cau chuyen tien bat thuong')
+    if has('tai nan', 'nhap vien', 'cap cuu', 'nguy kich', 'bi bat coc') and has('bam link', 'bam vao link', 'mo link', 'bam vao duong', 'mo duong dan', 'nhan vao lien ket'):
+        findings.append('Tin khan cap kem lien ket can xac minh')
+    if has('bi khoa', 'khoa tai khoan', 'vo hieu hoa') and has('dang nhap', 'bam', 'truy cap') and (has('http', 'link', 'lien ket', 'duong dan', 'trang web')):
+        findings.append('Lien ket hoac trang dang nhap dang nghi')
 
-    if has("mat khau", "so the", "thong tin ngan hang",
-           "can cuoc", "giay khai sinh", "ma bao mat") and has(
-           "gui", "nhap", "dien", "cung cap", "chup", "xac minh"):
-        findings.append("Yeu cau thong tin nhay cam")
+    if findings:
+        return list(dict.fromkeys(findings)), 'risk'
 
-    if has("tat xac thuc", "tat bao mat",
-           "tat phan mem diet virus"):
-        findings.append("Yeu cau tat tinh nang bao mat")
-
-    if has("chia se man hinh", "dieu khien tu xa",
-           "ma qr dang nhap", "quet ma qr dang nhap"):
-        findings.append("Nguy co chiem quyen truy cap")
-
-    if has("apk", "tep thuc thi", "tep dinh kem") and has(
-           "cai", "tai", "mo", "dinh kem"):
-        findings.append("Phan mem hoac tep chua xac minh")
-
-    if has("truy cap tin nhan sms", "cho phep truy cap tin nhan"):
-        findings.append("Yeu cau quyen truy cap SMS")
-
-    if has("duong dan rut gon", "lien ket la",
-           "trang web khong thuoc", "trang xac thuc cua toi",
-           "duong dan rieng") and has(
-           "bam", "dang nhap", "nhap", "xac nhan", "truy cap"):
-        findings.append("Lien ket hoac trang dang nhap dang nghi")
-
-    if has("anh rieng tu", "ghi am rieng", "video rieng tu",
-           "phat tan", "gui cho ca lop") and has(
-           "chuyen tien", "tra tien", "neu khong", "doi tien"):
-        findings.append("De doa, tong tien")
-
-    if has("vi tri truc tiep", "lich o nha mot minh"):
-        findings.append("Yeu cau thong tin vi tri rieng tu")
-
-    if has("chuyen tien", "chuyen khoan", "nop phi",
-           "dong phi", "dat coc", "thanh toan",
-           "mua the cao", "tra tien", "chuyen phi") and has(
-           "hoc bong", "qua", "thuong", "giai",
-           "diem", "phi", "tai khoan ca nhan",
-           "khan cap", "nguoi quan tri", "mo khoa"):
-        findings.append("Yeu cau chuyen tien bat thuong")
-
-    # Dấu hiệu khẩn cấp gây lo sợ kết hợp lời mời mở đường dẫn.
-    # Không mặc định mọi liên kết đều nguy hiểm.
-    urgent_event = has("tai nan", "nhap vien", "cap cuu", "nguy kich", "bi bat coc", "gap nan", "bi thuong")
-    link_request = has("bam vao link", "bam link", "nhan vao link", "truy cap link", "bam vao duong link", "mo link", "bam vao lien ket")
-    if urgent_event and link_request:
-        findings.append("Tin khan cap kem lien ket can xac minh")
-
-    return findings, "risk" if findings else "none"
+    # Dấu hiệu TRUNG BÌNH: chưa xác minh được người gửi / đề nghị dữ liệu cá nhân
+    # ở mức chưa phải mật khẩu, OTP, tài khoản ngân hàng.
+    personal = has('ho ten', 'so dien thoai', 'ngay sinh', 'dia chi', 'ten lop', 'lop va', 'danh sach lop', 'thong tin ca nhan', 'thong tin lien he', 'so dien thoai bo me')
+    request_personal = has('gui', 'cung cap', 'dien', 'dang ky', 'cho minh', 'cho toi', 'nhan tin', 'xin', 'de lai', 'nhap')
+    uncertain_source = has('nguoi la', 'so la', 'so dien thoai la', 'tai khoan la', 'tai khoan moi', 'chua xac minh', 'khong ro', 'khong co nguon', 'chua ro', 'tu nhan', 'tu xung', 'minh la thanh vien', 'toi la thanh vien', 'nhan vien', 'khong co thong bao', 'chua thay thong bao')
+    event = has('cuoc thi', 'nhom hoc', 'hoc bong', 'cau lac bo', 'qua tang', 'phan thuong', 'su kien', 'dang ky', 'chuong trinh', 'tham gia')
+    if personal and request_personal and (uncertain_source or event):
+        findings.append('Yeu cau thong tin ca nhan can xac minh')
+    if uncertain_source and has('lich thi', 'lich kiem tra', 'nghi hoc', 'truong em nghi', 'truong nghi', 'thong bao', 'doi lich', 'chuyen lop', 'tham gia', 'dang ky', 'mo link', 'duong dan', 'binh chon'):
+        findings.append('Nguon gui hoac thong bao chua xac minh')
+    if has('tin don', 'lan truyen', 'chuyen tiep') and has('truong', 'nghi hoc', 'lich', 'thong bao', 'giao vien', 'hieu truong'):
+        findings.append('Nguon gui hoac thong bao chua xac minh')
+    if has('link', 'lien ket', 'duong dan', 'ma qr') and has('dang ky', 'binh chon', 'nhan qua', 'nhan thuong', 'tham gia'):
+        findings.append('Lien ket can kiem tra nguon')
+    if has('muon tien', 'chuyen nham tien') and has('gap', 'khac thuong', 'tai khoan', 'chua xac minh', 'khong ro'):
+        findings.append('Yeu cau tai chinh can xac minh')
+    if findings:
+        return list(dict.fromkeys(findings)), 'caution'
+    return [], 'none'
 
 
 def analyze(text):
-    p = float(model.predict_proba([text])[0][1])
+    # Xác suất từ mô hình 2 lớp là tín hiệu hỗ trợ, KHÔNG phải độ tin cậy đã hiệu chuẩn.
+    p = float(model.predict_proba([str(text)])[0][1])
     findings, kind = rules(text)
     if kind == 'education':
         level = 'THẤP'
     elif kind == 'risk':
         level = 'CAO'
+    elif kind == 'caution':
+        level = 'TRUNG BÌNH'
     elif p >= 0.72:
         level = 'CAO'
     elif p >= 0.52:
@@ -243,7 +233,11 @@ with tab1:
                     'Yeu cau thong tin vi tri rieng tu': 'Không nên chia sẻ vị trí hoặc lịch sinh hoạt riêng tư với người lạ.',
                     'Yeu cau chuyen tien bat thuong': 'Yêu cầu chuyển tiền để nhận quà, học bổng hoặc mở khóa tài khoản cần được xác minh.',
                     'Tin khan cap kem lien ket can xac minh': 'Tin nhắn kể chuyện tai nạn hoặc cấp cứu để gây lo lắng, rồi giục em mở đường link. Hãy gọi trực tiếp để xác minh trước.',
-                    'Noi dung co dau hieu giao duc/phong tranh': 'Nội dung có dấu hiệu nhắc nhở hoặc giáo dục an toàn số; vẫn cần kiểm tra người gửi.'
+                    'Noi dung co dau hieu giao duc/phong tranh': 'Nội dung có dấu hiệu nhắc nhở hoặc giáo dục an toàn số; vẫn cần kiểm tra người gửi.',
+                    'Yeu cau thong tin ca nhan can xac minh': 'Người gửi muốn thu thập họ tên, lớp hoặc số điện thoại. Em chỉ cung cấp khi đã xác minh đơn vị tổ chức và thực sự cần thiết.',
+                    'Nguon gui hoac thong bao chua xac minh': 'Danh tính người gửi hoặc tính chính xác của thông báo chưa được xác thực.',
+                    'Lien ket can kiem tra nguon': 'Đường dẫn hoặc mã QR mời tham gia hoạt động cần được kiểm tra nguồn trước khi mở.',
+                    'Yeu cau tai chinh can xac minh': 'Lời đề nghị liên quan đến tiền cần được xác minh trực tiếp qua kênh khác.'
                 }
                 for f in findings:
                     st.write('🔎 ' + descriptions.get(f, f))
