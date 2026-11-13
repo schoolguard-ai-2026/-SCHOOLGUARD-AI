@@ -499,6 +499,57 @@ def advise_student_situation(message):
     if contains('co giao dan', 'thay giao dan', 'bo me dan', 'me dan', 'thay co nhac') and contains('khong duoc cung cap', 'tuyet doi khong', 'khong nen dua', 'khong chia se'):
         return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Đây là lời nhắc phòng tránh rủi ro, không phải yêu cầu cung cấp thông tin bảo mật.', [
             'Tiếp tục giữ kín mật khẩu và mã OTP.', 'Chỉ sử dụng các kênh chính thức khi cần hỗ trợ tài khoản.'])
+    # Nhận diện tình huống đăng ký hoạt động từ tài khoản chưa xác minh.
+    # Đây là mức cần thận trọng, không mặc định người gửi là kẻ lừa đảo.
+    unknown_organizer = contains(
+        'tai khoan chua ro danh tinh', 'chua ro danh tinh', 'khong ro danh tinh',
+        'chua biet', 'khong biet', 'chua xac minh', 'chua duoc xac minh',
+        'khong ro nguon', 'nguoi la', 'tai khoan la', 'chua ro nguoi gui'
+    )
+    registration = contains('cuoc thi', 'dang ky tham gia', 'tham gia cuoc thi',
+                            'tham gia hoat dong', 'loi moi tham gia')
+    personal_details = contains('ho ten', 'so dien thoai', 'ngay sinh',
+                                 'thong tin ca nhan', 'dia chi')
+    personal_request = contains('cung cap', 'gui', 'xin', 'yeu cau', 'de nghi', 'dien')
+    if unknown_organizer and registration and personal_details and personal_request and not contains(
+        'ma otp', 'mat khau', 'chuyen tien', 'dong phi', 'nop phi', 'de doa'
+    ):
+        return ('NGUY CƠ TRUNG BÌNH',
+            'Lời mời tham gia hoạt động đến từ tài khoản chưa xác minh và đề nghị cung cấp thông tin cá nhân; chưa đủ cơ sở kết luận đây là cuộc thi chính thức.', [
+            'Hỏi giáo viên hoặc nhà trường qua kênh chính thức xem cuộc thi có thật không.',
+            'Chưa gửi họ tên, số điện thoại hoặc dữ liệu cá nhân cho tài khoản chưa xác minh.',
+            'Nếu xuất hiện yêu cầu mật khẩu, mã OTP hoặc chuyển tiền, dừng lại và báo người lớn.'
+        ])
+
+    # Thông báo học tập từ nhóm lớp đã xác minh: từ bảo mật ở dạng phủ định
+    # không được coi là một yêu cầu nguy hiểm.
+    verified_class = contains('nhom zalo chinh thuc cua lop', 'nhom chinh thuc cua lop',
+        'nhom lop chinh thuc', 'nhom da xac minh cua lop')
+    school_reminder = contains('giao vien chu nhiem nhac', 'co giao nhac',
+        'thay giao nhac', 'giao vien nhac')
+    schoolwork = contains('mang day du sach vo', 'mang sach vo', 'chuan bi bai kiem tra',
+        'kiem tra tin hoc', 'on bai', 'chuan bi bai', 'nop bai tap')
+    # Chỉ loại các phủ định rõ ràng, không xóa thông tin bảo mật trong lời yêu cầu thật.
+    harmless_text = t
+    for neg in ('khong yeu cau cung cap thong tin ca nhan',
+                'khong yeu cau cung cap', 'khong yeu cau',
+                'khong doi', 'khong gui', 'khong can gui'):
+        harmless_text = harmless_text.replace(neg + ' mat khau', '')
+        harmless_text = harmless_text.replace(neg + ' thong tin ca nhan', '')
+    denial = contains('tin nhan khong yeu cau', 'khong yeu cau cung cap',
+        'khong yeu cau', 'khong co yeu cau')
+    dangerous_instruction = any(x in t for x in (
+        'hay gui otp', 'hay gui mat khau', 'hay nhap mat khau',
+        'yeu cau gui otp', 'yeu cau chuyen tien', 'yeu cau nhap mat khau',
+        'vui long chuyen tien', 'chuyen tien ngay', 'truy cap link', 'bam link la'
+    ))
+    if verified_class and school_reminder and schoolwork and not dangerous_instruction:
+        return ('NGUY CƠ THẤP',
+            'Nội dung là lời nhắc học tập trong nhóm lớp chính thức; chưa thấy yêu cầu thực hiện hành động nguy hiểm.', [
+            'Chuẩn bị sách vở và đối chiếu lịch kiểm tra nếu cần.',
+            'Chỉ tin những thông báo từ kênh đã được xác minh; không tiết lộ mật khẩu, OTP.'
+        ])
+
     # 4.5: Dấu hiệu bổ sung từ ngân hàng tình huống THCS.
     # Các điều kiện có tính kết hợp để giảm cảnh báo nhầm.
     if contains('ep len xe', 'bi ep len xe', 'keu cuu', 'cau cuu') and contains('xe', 'bat', 'theo', 'cuu'):
