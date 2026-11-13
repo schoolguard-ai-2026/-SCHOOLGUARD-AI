@@ -447,6 +447,8 @@ def advise_student_situation(message):
     # Tránh kết luận nguy hiểm khi học sinh chỉ thuật lại lời khuyên phòng tránh.
     protective = contains('co giao dan', 'thay giao dan', 'me dan', 'bo dan',
         'khong nen', 'tuyet doi khong', 'khong duoc cung cap', 'dung bao gio',
+        'khong co yeu cau nhap mat khau', 'khong yeu cau nhap mat khau',
+        'khong co yeu cau gui otp',
         'canh bao rang', 'huong dan phong tranh')
     credential = contains('mat khau', 'otp', 'ma xac thuc', 'ma dang nhap')
     credential_request = contains('bao em dua', 'bao em gui', 'bao em doc',
@@ -499,6 +501,96 @@ def advise_student_situation(message):
     if contains('co giao dan', 'thay giao dan', 'bo me dan', 'me dan', 'thay co nhac') and contains('khong duoc cung cap', 'tuyet doi khong', 'khong nen dua', 'khong chia se'):
         return ('TÌNH HUỐNG BÌNH THƯỜNG', 'Đây là lời nhắc phòng tránh rủi ro, không phải yêu cầu cung cấp thông tin bảo mật.', [
             'Tiếp tục giữ kín mật khẩu và mã OTP.', 'Chỉ sử dụng các kênh chính thức khi cần hỗ trợ tài khoản.'])
+    # V3: Phân tích tín hiệu theo nhóm ngữ nghĩa thay vì chỉ so khớp nguyên câu.
+    # Các nhận định này chỉ dựa vào thông tin người dùng kể, không xác thực người gửi.
+    class_channel = contains('nhom zalo chinh thuc', 'nhom lop chinh thuc',
+        'nhom hoc tap chinh thuc', 'nhom chinh thuc cua lop',
+        'nhom hoc tap da duoc xac minh', 'nhom hoc tap da xac minh',
+        'nhom lop da xac minh', 'kenh chinh thuc cua lop',
+        'nhom hoc tap quen thuoc')
+    normal_study = contains('on tap', 'on bai', 'mang vo', 'mang sach',
+        'vo thuc hanh', 'bai thuc hanh', 'hoc tap', 'bai thuyet trinh',
+        'thuyet trinh', 'tai lieu', 'hoan thanh bai', 'nop bai',
+        'kiem tra tin hoc', 'thu vien', 'phan cong')
+    school_sender = contains('giao vien', 'co giao', 'thay giao',
+        'thay co', 'nhom hoc tap', 'nhom lop', 'cac thanh vien')
+    teaching_safety = contains('huong dan', 'nhac nho', 'day hoc', 'giai thich',
+        'duoc yeu cau ghi nho', 'ghi nho quy tac') and contains(
+        'khong duoc chia se', 'khong chia se', 'khong cung cap',
+        'khong duoc cung cap', 'bao ve tai khoan', 'phong tranh')
+    sensitive_request = contains('yeu cau gui ma', 'yeu cau nhap ma',
+        'yeu cau gui mat khau', 'yeu cau nhap mat khau',
+        'gui ma otp', 'gui mat khau', 'nhap mat khau',
+        'chuyen tien ngay', 'chuyen khoan ngay', 'chuyen ngay',
+        'chuyen khoan truoc', 'nop phi truoc', 'dong phi truoc')
+    if contains('khong co yeu cau nhap mat khau', 'khong yeu cau nhap mat khau') and not contains(
+        'nhung sau do yeu cau', 'tuy nhien van yeu cau', 'nhung lai yeu cau',
+        'chuyen tien ngay', 'chuyen khoan ngay', 'gui ma otp', 'gui mat khau'):
+        sensitive_request = False
+    suspicious_install = contains('tep apk', 'file apk', 'ung dung apk',
+        'cai dat apk', 'cai mot tep', 'cai ung dung', 'tai tep apk')
+    sms_permission = contains('quyen doc tin nhan', 'doc tin nhan sms',
+        'quyen truy cap sms', 'quyen doc sms', 'bat quyen doc',
+        'truy cap tin nhan sms')
+    if suspicious_install and sms_permission and contains('khong ro nguon',
+        'nguoi tu nhan', 'tu nhan', 'ho tro ky thuat', 'khoi phuc tai khoan',
+        'bi khoa', 'tai khoan') and not teaching_safety:
+        return ('NGUY CƠ CAO',
+            'Có yêu cầu cài ứng dụng APK chưa xác minh và cấp quyền đọc SMS, có thể làm lộ mã xác thực hoặc dữ liệu riêng tư.', [
+            'Không tải hay cài tệp APK từ người gửi chưa xác minh và không cấp quyền đọc SMS.',
+            'Dùng kênh hỗ trợ chính thức để kiểm tra; báo cha mẹ hoặc giáo viên.',
+            'Nếu đã cài và cấp quyền, nhờ người lớn hỗ trợ gỡ ứng dụng, kiểm tra quyền và bảo vệ các tài khoản liên quan.'
+        ])
+    if contains('hoc bong', 'giai thuong', 'nhan qua') and contains(
+        'chuyen tien', 'chuyen khoan', 'chuyen ngay', 'nop tien', 'nop phi', 'dong phi') and contains(
+        'tai khoan ca nhan', 'gia mao', 'giong co giao',
+        'anh dai dien giong', 'khong hoi lai', 'khong hoi nha truong',
+        'khong duoc hoi', 'ngay', 'gap') and not teaching_safety:
+        return ('NGUY CƠ CAO',
+            'Tin nhắn gắn học bổng hoặc phần thưởng với yêu cầu chuyển tiền đáng ngờ và có dấu hiệu giả mạo hoặc ngăn cản xác minh.', [
+            'Không chuyển tiền, không làm theo lời nhắn.',
+            'Gọi hoặc gặp giáo viên, nhà trường qua kênh đã biết để kiểm tra.',
+            'Giữ nội dung tin nhắn và báo người lớn đáng tin cậy.'
+        ])
+    unverified_link = contains('tai khoan chua ro', 'tai khoan khong ro',
+        'tai khoan la', 'chua ro danh tinh', 'chua duoc xac minh',
+        'chua duoc giao vien xac nhan', 'nguoi gui chua ro',
+        'duong dan chua duoc', 'nguon chua duoc')
+    survey_link = contains('duong dan khao sat', 'link khao sat',
+        'duong link khao sat', 'lien ket khao sat')
+    # Lời mời từ tổ chức chưa được nhà trường xác nhận, xin dữ liệu đăng ký.
+    if contains('cau lac bo', 'cuoc thi', 'hoat dong truc tuyen') and contains(
+        'xin ho ten', 'xin thong tin', 'cung cap ho ten', 'gui ho ten',
+        'ho ten, lop', 'ho ten va lop', 'xin ngay sinh') and contains(
+        'chua cung cap thong tin xac nhan', 'chua duoc nha truong xac nhan',
+        'chua ro danh tinh', 'chua duoc xac minh', 'tai khoan moi lap',
+        'chua ro nguon', 'tai khoan la') and not sensitive_request:
+        return ('NGUY CƠ TRUNG BÌNH',
+            'Lời mời hoạt động chưa được nhà trường xác nhận nhưng đã hỏi dữ liệu cá nhân.', [
+            'Xác minh với giáo viên hoặc ban tổ chức qua kênh chính thức.',
+            'Chưa gửi ngày sinh, số điện thoại hoặc thông tin cá nhân cho tài khoản chưa xác minh.'
+        ])
+    if survey_link and unverified_link and not sensitive_request:
+        return ('NGUY CƠ TRUNG BÌNH',
+            'Đường dẫn khảo sát chưa được xác minh; chưa đủ căn cứ kết luận đây là lừa đảo nhưng cần thận trọng.', [
+            'Hỏi giáo viên hoặc kiểm tra kênh thông báo chính thức trước khi mở.',
+            'Không nhập dữ liệu riêng tư hoặc thông tin bảo mật vào trang chưa xác minh.'
+        ])
+    if teaching_safety and school_sender and not sensitive_request:
+        return ('NGUY CƠ THẤP',
+            'Đây là lời hướng dẫn bảo vệ tài khoản, không phải lời yêu cầu tiết lộ thông tin bảo mật.', [
+            'Ghi nhớ không chia sẻ mật khẩu hoặc OTP.',
+            'Xác minh nguồn gửi nếu có yêu cầu khác thường.'
+        ])
+    if class_channel and normal_study and not sensitive_request and not contains(
+        'nguoi la', 'tai khoan la', 'chua xac minh', 'chua ro danh tinh',
+        'khong duoc noi voi bo me', 'giau gia dinh', 'de doa'):
+        return ('NGUY CƠ THẤP',
+            'Nội dung mô tả hoạt động học tập thông thường từ nhóm đã được xác minh; chưa phát hiện yêu cầu nguy hiểm rõ ràng.', [
+            'Đối chiếu với giáo viên hoặc thời khóa biểu nếu cần.',
+            'Tiếp tục bảo vệ thông tin cá nhân và không thực hiện yêu cầu bất thường.'
+        ])
+
     # Nhận diện tình huống đăng ký hoạt động từ tài khoản chưa xác minh.
     # Đây là mức cần thận trọng, không mặc định người gửi là kẻ lừa đảo.
     unknown_organizer = contains(
