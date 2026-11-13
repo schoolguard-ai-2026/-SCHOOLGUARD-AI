@@ -524,11 +524,16 @@ def advise_student_situation(message):
     # Thông báo học tập từ nhóm lớp đã xác minh: từ bảo mật ở dạng phủ định
     # không được coi là một yêu cầu nguy hiểm.
     verified_class = contains('nhom zalo chinh thuc cua lop', 'nhom chinh thuc cua lop',
-        'nhom lop chinh thuc', 'nhom da xac minh cua lop')
+        'nhom lop chinh thuc', 'nhom da xac minh cua lop',
+        'nhom hoc tap chinh thuc cua lop', 'kenh chinh thuc cua lop',
+        'nhom hoc tap da xac minh')
     school_reminder = contains('giao vien chu nhiem nhac', 'co giao nhac',
-        'thay giao nhac', 'giao vien nhac')
+        'thay giao nhac', 'giao vien nhac', 'giao vien tin hoc gui thong bao',
+        'giao vien gui thong bao', 'giao vien thong bao', 'thay co gui thong bao')
     schoolwork = contains('mang day du sach vo', 'mang sach vo', 'chuan bi bai kiem tra',
-        'kiem tra tin hoc', 'on bai', 'chuan bi bai', 'nop bai tap')
+        'kiem tra tin hoc', 'on bai', 'chuan bi bai', 'nop bai tap',
+        'hoan thanh bai thuc hanh', 'nop san pham', 'nop bai thuc hanh',
+        'bai thuc hanh', 'bai tap ve nha')
     # Chỉ loại các phủ định rõ ràng, không xóa thông tin bảo mật trong lời yêu cầu thật.
     harmless_text = t
     for neg in ('khong yeu cau cung cap thong tin ca nhan',
