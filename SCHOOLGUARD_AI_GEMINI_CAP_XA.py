@@ -209,7 +209,7 @@ st.caption('Nhận diện nguy cơ • Rèn kỹ năng • Bảo vệ bản thâ
 tab1, tab2, tab3, tab4, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử & Tình huống', '🌐 Trò chơi trực tuyến', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
 
 # Gemini trực tiếp phân tích nội dung mới; không sử dụng hàm analyze() quy tắc cũ cho hai mục này.
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3.8-flash"
 
 def gemini_assess(content, mode="tin nhắn"):
     if len(content.strip()) > 1800:
