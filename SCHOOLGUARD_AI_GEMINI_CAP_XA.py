@@ -360,7 +360,7 @@ with tab2:
 
 
 with tab4:
-    st.subheader('🌐 Trò chơi trực tuyến – Digital World: Thế giới số')
+    st.subheader('🌐 Trò chơi trực tuyến – Digital World: Thế giới số – Digital World: Thế giới số')
     st.write('Cùng khám phá các nhiệm vụ về an toàn trên không gian mạng qua trò chơi nhập vai Digital World.')
     st.info('Nhấn nút bên dưới để mở trò chơi trên trang web bên ngoài. Không cần cài đặt trực tiếp vào SchoolGuard AI.')
     st.link_button(
