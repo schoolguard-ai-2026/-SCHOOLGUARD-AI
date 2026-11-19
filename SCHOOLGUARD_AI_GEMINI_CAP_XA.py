@@ -206,7 +206,7 @@ div.stButton > button, div.stFormSubmitButton > button {border-radius: 9px; font
 st.title("PHẦN MỀM HỖ TRỢ HỌC SINH THCS NHẬN DIỆN NGUY CƠ VÀ ỨNG XỬ AN TOÀN TRÊN KHÔNG GIAN MẠNG")
 st.caption('Nhận diện nguy cơ • Rèn kỹ năng • Bảo vệ bản thân')
 
-tab1, tab2, tab3, tab4, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử & Tình huống', '🌐 Trò chơi trực tuyến', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
+tab1, tab2, tab3, tab4, tab6, tab5 = st.tabs(['🔎 Kiểm tra tin', '🎮 Thử thách', '🕵️ Thám tử & Tình huống', '🌐 Trò chơi tham khảo – Digital World', '💬 Góc chia sẻ', 'ℹ️ Giới thiệu'])
 
 # Gemini trực tiếp phân tích nội dung mới; không sử dụng hàm analyze() quy tắc cũ cho hai mục này.
 GEMINI_MODEL = "gemini-3.6-flash"
