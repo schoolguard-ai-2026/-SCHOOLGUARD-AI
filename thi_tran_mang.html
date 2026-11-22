@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Thị trấn Mạng – Hành trình Công dân số</title>
+<style>
+  :root{--ink:#1d2b3a;--muted:#5b6b7c;--primary:#2563eb;--ok:#16a34a;--ok-bg:#e8f7ee;--bad:#dc2626;--bad-bg:#fdecec;--line:#d6e0ec}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#1b2a1b;font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none}
+  #game{position:relative;width:100%;height:100%;overflow:hidden}
+  canvas#view{display:block;width:100%;height:100%;image-rendering:pixelated;outline:none}
+
+  /* HUD */
+  #hud{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+  .pill{background:rgba(255,255,255,.92);border-radius:12px;padding:6px 12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.2);font-size:15px}
+  #hud-left{display:flex;flex-direction:column;gap:6px}
+  #quest{font-size:13px;font-weight:600;color:var(--muted)}
+  #minimap{border-radius:10px;border:3px solid rgba(255,255,255,.92);box-shadow:0 2px 6px rgba(0,0,0,.25);image-rendering:pixelated;background:#7ec850}
+  #hint{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;background:rgba(20,30,45,.85);color:#fff;padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;display:none;white-space:nowrap;pointer-events:none}
+
+  /* Điều khiển cảm ứng */
+  #pad{position:absolute;left:14px;bottom:14px;width:150px;height:150px;display:none}
+  #pad button{position:absolute;width:50px;height:50px;border-radius:12px;border:0;background:rgba(255,255,255,.75);font-size:22px;font-weight:800;color:#24364a;box-shadow:0 2px 6px rgba(0,0,0,.25);touch-action:none}
+  #pad .u{left:50px;top:0}#pad .d{left:50px;top:100px}#pad .l{left:0;top:50px}#pad .r{left:100px;top:50px}
+  #abtn{position:absolute;right:18px;bottom:30px;width:76px;height:76px;border-radius:50%;border:0;background:rgba(37,99,235,.9);color:#fff;font-size:15px;font-weight:800;box-shadow:0 3px 8px rgba(0,0,0,.3);display:none;touch-action:none}
+  body.touch #pad, body.touch #abtn{display:block}
+  body.touch #hint{bottom:178px}
+  @media (max-width:600px){#minimap{width:84px;height:63px}.pill{font-size:13px}#quest{font-size:12px;max-width:62vw}}
+
+  /* Hộp thoại */
+  #dlg{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;width:min(720px,calc(100% - 20px));max-height:82%;overflow:auto;background:#fffdf7;border:4px solid #3b2a1a;border-radius:14px;padding:14px 16px 12px;box-shadow:0 6px 0 #3b2a1a,0 10px 24px rgba(0,0,0,.35);display:none;font-size:16px;line-height:1.45}
+  #dlg .name{display:inline-block;background:#3b2a1a;color:#ffe9b0;font-weight:800;padding:2px 10px;border-radius:8px;margin-bottom:6px;font-size:14px}
+  #dlg .text{min-height:44px;white-space:pre-line}
+  #dlg .msg{background:#eef4fb;border-left:5px solid var(--primary);border-radius:10px;padding:10px 12px;margin:6px 0 10px}
+  #dlg .msg .from{font-size:13px;color:var(--muted);font-weight:700}
+  #dlg .opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 12px;margin:6px 0;font:inherit;color:inherit;cursor:pointer}
+  #dlg .opt:hover:not(:disabled){border-color:var(--primary);background:#f6f9ff}
+  #dlg .opt:disabled{cursor:default}
+  #dlg .opt.right{border-color:var(--ok);background:var(--ok-bg)}
+  #dlg .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+  #dlg .fb{border-radius:10px;padding:10px 12px;margin-top:8px}
+  #dlg .fb.ok{background:var(--ok-bg);border:1px solid #b7e3c6}
+  #dlg .fb.no{background:var(--bad-bg);border:1px solid #f3c1c1}
+  #dlg .next{display:block;margin:10px 0 0 auto;border:0;border-radius:10px;padding:9px 18px;background:var(--primary);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+  #dlg .more{float:right;color:var(--muted);font-size:13px;margin-top:4px}
+
+  /* Màn hình phủ */
+  .overlay{position:absolute;inset:0;background:rgba(15,25,20,.6);display:none;align-items:center;justify-content:center;padding:14px}
+  .overlay.show{display:flex}
+  .card{background:#fff;border-radius:18px;padding:22px;max-width:520px;width:100%;max-height:100%;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:center}
+  .card h1{margin:4px 0 6px;font-size:26px}
+  .card p{color:var(--muted);margin:6px 0 12px}
+  .card input{width:100%;padding:12px;font-size:16px;border:2px solid var(--line);border-radius:12px;outline:none;text-align:center}
+  .card input:focus{border-color:var(--primary)}
+  .card .btn{display:block;width:100%;margin-top:12px;border:0;border-radius:12px;padding:13px;background:var(--primary);color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+  .pick-title{font-weight:700;margin:4px 0 8px}
+  .pick{display:flex;gap:12px;justify-content:center;margin-bottom:12px}
+  .pick-card{flex:1;max-width:150px;background:#f4f7fb;border:3px solid var(--line);border-radius:16px;padding:10px 8px 8px;cursor:pointer;font:inherit;font-weight:800;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px;transition:border-color .15s,transform .1s,background .15s}
+  .pick-card:hover{transform:translateY(-2px)}
+  .pick-card.sel{border-color:var(--primary);background:#eaf1ff;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+  .pick-card canvas{width:64px;height:72px;image-rendering:pixelated;background:radial-gradient(circle at 50% 70%,#cfe9b8 0 45%,transparent 46%)}
+  .howto{text-align:left;background:#f4f7fb;border-radius:12px;padding:10px 14px;font-size:14px;color:var(--muted);margin:12px 0}
+  .howto b{color:var(--ink)}
+  .lessons{text-align:left;padding-left:20px;font-size:14px}
+  .lessons li{margin:5px 0}
+  .small{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="game">
+  <canvas id="view" tabindex="0"></canvas>
+
+  <div id="hud" style="display:none">
+    <div id="hud-left">
+      <div class="pill"><span id="h-hearts"></span> &nbsp; 🛡️ <span id="h-shields">0</span></div>
+      <div class="pill" id="quest"></div>
+    </div>
+    <canvas id="minimap" width="120" height="90"></canvas>
+  </div>
+  <div id="hint"></div>
+
+  <div id="pad">
+    <button class="u" data-dir="up" aria-label="Lên">▲</button>
+    <button class="l" data-dir="left" aria-label="Trái">◀</button>
+    <button class="r" data-dir="right" aria-label="Phải">▶</button>
+    <button class="d" data-dir="down" aria-label="Xuống">▼</button>
+  </div>
+  <button id="abtn" aria-label="Nói chuyện">💬 Nói</button>
+
+  <div id="dlg"></div>
+
+  <!-- Màn hình bắt đầu -->
+  <div class="overlay show" id="ov-start">
+    <div class="card">
+      <h1>Thị trấn Mạng</h1>
+      <p>Đi khắp thị trấn, gặp 5 người bạn và vượt qua các thử thách để trở thành <b>Công dân số thông thái</b>!</p>
+      <div class="pick-title">Chọn nhân vật của em</div>
+      <div class="pick" role="radiogroup" aria-label="Chọn nhân vật">
+        <button class="pick-card sel" data-look="boy" role="radio" aria-checked="true">
+          <canvas class="prev" width="64" height="72" data-look="boy"></canvas>
+          <span>Nam</span>
+        </button>
+        <button class="pick-card" data-look="girl" role="radio" aria-checked="false">
+          <canvas class="prev" width="64" height="72" data-look="girl"></canvas>
+          <span>Nữ</span>
+        </button>
+      </div>
+      <input id="pname" maxlength="20" placeholder="Nhập tên của em" autocomplete="off">
+      <div class="howto">
+        <div>🎮 <b>Di chuyển:</b> phím mũi tên hoặc W A S D (điện thoại: nút ▲▼◀▶)</div>
+        <div>💬 <b>Nói chuyện:</b> đứng gần nhân vật có dấu <b>!</b> rồi nhấn <b>E</b>, <b>Space</b> hoặc nút <b>Nói</b></div>
+        <div>🛡️ Chọn đúng nhận Khiên, chọn sai mất ❤️ (có 5 Tim)</div>
+      </div>
+      <button class="btn" id="b-start">Bắt đầu</button>
+      <div class="small" style="margin-top:10px">Trò chơi không lưu và không gửi đi thông tin nào của em.</div>
+    </div>
+  </div>
+
+  <!-- Hết tim -->
+  <div class="overlay" id="ov-over">
+    <div class="card">
+      <div style="font-size:44px">💔</div>
+      <h1>Em đã hết Tim!</h1>
+      <p>Mỗi lần sai là một lần học thêm. Hãy đọc kỹ lời giải thích và thử lại nhé!</p>
+      <button class="btn" id="b-retry">Chơi lại</button>
+    </div>
+  </div>
+
+  <!-- Kết thúc -->
+  <div class="overlay" id="ov-end">
+    <div class="card">
+      <svg width="120" height="120" viewBox="0 0 140 140" aria-hidden="true">
+        <circle cx="70" cy="62" r="50" id="badge-fill" fill="#f59e0b"/>
+        <circle cx="70" cy="62" r="40" fill="none" stroke="#fff" stroke-width="4" opacity=".7"/>
+        <path d="M70 34 L78 54 L100 55 L83 68 L89 90 L70 77 L51 90 L57 68 L40 55 L62 54 Z" fill="#fff"/>
+        <path d="M45 104 L55 134 L70 122 L85 134 L95 104" fill="#2563eb"/>
+      </svg>
+      <h1 id="end-title"></h1>
+      <p id="end-score"></p>
+      <ol class="lessons" id="end-lessons"></ol>
+      <button class="btn" id="b-again">Chơi lại</button>
+    </div>
+  </div>
+</div>
+
+<script>
+{
+/* =====================================================================
+   PHẦN 1. NỘI DUNG THỬ THÁCH (học sinh sửa ở đây)
+   ===================================================================== */
+const ZONES = [
+  { icon:"🔐", name:"Cổng Mật khẩu",
+    npc:{ name:"Bác Bảo vệ", tx:9.5, ty:9, look:"guard" },
+    intro:"Chào cháu! Bác canh Cổng Mật khẩu. Muốn qua cổng, cháu phải biết cách giữ tài khoản an toàn. Thử nhé!",
+    lesson:"Mật khẩu là của riêng em: không chia sẻ cho ai, đặt mật khẩu dài khó đoán và luôn đăng xuất khi dùng máy chung.",
+    items:[
+      { from:"Tin nhắn từ bạn thân", text:"\"Cho tớ mật khẩu Facebook của cậu nhé, tớ đăng nhập vào like bài dự thi giúp cậu!\"",
+        options:[{t:"Gửi luôn, vì đó là bạn thân của mình."},{t:"Cảm ơn bạn nhưng từ chối, mình sẽ tự đăng nhập để like.",ok:true},{t:"Gửi mật khẩu, lát nữa đổi mật khẩu khác là được."}],
+        why:"Có mật khẩu là có toàn quyền tài khoản: đọc tin nhắn, đăng bài, đổi thông tin. Kể cả bạn thân cũng có thể vô tình làm lộ.",
+        tip:"Mật khẩu giống bàn chải đánh răng: không dùng chung với ai." },
+      { from:"Tạo tài khoản học tập", text:"Em cần đặt mật khẩu mới. Mật khẩu nào an toàn nhất?",
+        options:[{t:"123456"},{t:"abc12345"},{t:"MeoMun!AnCa*7Lan",ok:true}],
+        why:"Mật khẩu dài, có chữ hoa, chữ thường, số và ký tự đặc biệt rất khó đoán. \"123456\" nằm trong danh sách mật khẩu bị dò nhiều nhất.",
+        tip:"Ghép một câu vui dễ nhớ thành mật khẩu dài, thêm số và ký tự đặc biệt." },
+      { from:"Phòng máy của trường", text:"Em vừa đăng nhập Zalo trên máy tính phòng Tin học. Học xong, em làm gì?",
+        options:[{t:"Tắt cửa sổ trình duyệt là xong."},{t:"Bấm \"Đăng xuất\" và không chọn \"Lưu mật khẩu\".",ok:true},{t:"Nhờ bạn ngồi sau đăng xuất giúp."}],
+        why:"Tắt cửa sổ chưa chắc đã đăng xuất. Người dùng máy sau có thể vào tài khoản của em.",
+        tip:"Máy dùng chung: luôn tự tay bấm Đăng xuất." }
+    ]},
+  { icon:"🎁", name:"Chợ Quà tặng",
+    npc:{ name:"Cô Bán hàng", tx:34.5, ty:9, look:"seller" },
+    intro:"Chợ Quà tặng đông vui lắm, nhưng cũng nhiều \"quà\" giả! Cô kể cháu nghe vài chuyện nhé.",
+    lesson:"Quà thật không bắt em trả phí trước. Mã OTP chỉ dùng cho chính em, tuyệt đối không gửi cho ai.",
+    items:[
+      { from:"SMS từ số lạ", text:"\"CHÚC MỪNG! Bạn đã trúng iPhone. Chuyển 299.000đ phí nhận quà để được giao ngay hôm nay.\"",
+        options:[{t:"Chuyển tiền ngay kẻo hết quà."},{t:"Không chuyển tiền, chặn số và báo cho bố mẹ.",ok:true},{t:"Nhắn lại hỏi xem có thật không."}],
+        why:"Đòi \"phí nhận quà\" trước là dấu hiệu lừa đảo điển hình. Nhắn lại còn giúp kẻ gian biết số của em đang hoạt động.",
+        tip:"Trúng thưởng mà phải trả tiền trước = lừa đảo." },
+      { from:"Tin nhắn tự xưng \"Bộ phận hỗ trợ\"", text:"\"Tài khoản của bạn có giao dịch lạ. Gửi ngay mã OTP vừa nhận, nếu không tài khoản sẽ bị khóa.\"",
+        options:[{t:"Gửi mã OTP để không bị khóa."},{t:"Chỉ gửi một nửa mã cho an toàn."},{t:"Không gửi OTP cho ai, nhờ người lớn kiểm tra trong ứng dụng chính thức.",ok:true}],
+        why:"Không tổ chức chính thức nào xin mã OTP qua tin nhắn. Lời dọa \"sẽ bị khóa\" là để em hoảng mà làm theo.",
+        tip:"OTP là chìa khóa nhà: không đưa cho ai, dù họ xưng là ai." },
+      { from:"Bình luận trong nhóm game", text:"\"Nhập tài khoản và mật khẩu game vào link này để nhận 10.000 kim cương miễn phí!\"",
+        options:[{t:"Nhập thử, biết đâu được thật."},{t:"Không bấm link, báo cáo bình luận và kể với người lớn.",ok:true},{t:"Gửi link cho bạn bè cùng nhận."}],
+        why:"Đây là trang giả để lấy cắp tài khoản game. Gửi cho bạn bè sẽ khiến bạn em cũng bị mất tài khoản.",
+        tip:"Quà miễn phí mà đòi mật khẩu = bẫy." }
+    ]},
+  { icon:"📰", name:"Tòa soạn Tin tức",
+    npc:{ name:"Chú Phóng viên", tx:12.5, ty:25, look:"reporter" },
+    intro:"Chú làm báo nên ngày nào cũng gặp tin thật, tin giả. Cháu thử làm \"thám tử tin tức\" xem!",
+    lesson:"Trước khi tin hay chia sẻ, hãy hỏi: Ai đăng? Có nguồn chính thức không? Chia sẻ có làm tổn thương ai không?",
+    items:[
+      { from:"Nhóm Zalo của lớp", text:"\"Trường nghỉ học 3 ngày vì bão, share gấp cho mọi người!\" (không ghi nguồn)",
+        options:[{t:"Chia sẻ ngay để các bạn biết."},{t:"Xem thông báo chính thức của trường hoặc hỏi thầy cô chủ nhiệm.",ok:true},{t:"Tin luôn và ở nhà nghỉ học."}],
+        why:"Tin không rõ nguồn có thể sai, khiến nhiều bạn nghỉ học nhầm. Thông báo nghỉ học luôn đến từ nhà trường.",
+        tip:"Chưa rõ nguồn: dừng lại, kiểm tra, rồi mới chia sẻ." },
+      { from:"Video có 1 triệu lượt xem", text:"\"Uống nước chanh nóng mỗi sáng chữa khỏi mọi bệnh, bác sĩ không muốn bạn biết!\"",
+        options:[{t:"Nhiều người xem như vậy chắc là đúng."},{t:"Gửi ngay cho cả nhà cùng làm."},{t:"Tìm thông tin từ nguồn uy tín như Bộ Y tế hoặc hỏi bác sĩ.",ok:true}],
+        why:"Lượt xem cao không chứng minh thông tin đúng. Câu chữ giật gân như \"chữa khỏi mọi bệnh\" là dấu hiệu tin sai.",
+        tip:"Nhiều view không có nghĩa là đúng." },
+      { from:"Bài đăng trên mạng xã hội", text:"Một tài khoản đăng ảnh chế về một bạn trong trường kèm tin đồn không đúng sự thật.",
+        options:[{t:"Bình luận \"haha\" cho vui."},{t:"Chia sẻ để hỏi mọi người xem có thật không."},{t:"Không chia sẻ, báo cáo bài đăng và nói với thầy cô.",ok:true}],
+        why:"Chia sẻ hay bình luận đều làm bài đăng lan rộng và khiến bạn ấy tổn thương hơn.",
+        tip:"Không chia sẻ tin đồn về người khác." }
+    ]},
+  { icon:"🤝", name:"Công viên Kết bạn",
+    npc:{ name:"Bạn Na", tx:27.5, ty:21, look:"na" },
+    intro:"Hi! Tớ là Na. Tớ hay chơi game và quen nhiều bạn trên mạng lắm. Cậu giúp tớ xử lý mấy tin nhắn này nhé?",
+    lesson:"Người quen qua mạng vẫn là người lạ. Không gửi ảnh, địa chỉ, số điện thoại, không đi gặp riêng và luôn kể với bố mẹ.",
+    items:[
+      { from:"Người lạ trong game", text:"\"Anh là game thủ nổi tiếng nè. Em gửi ảnh và địa chỉ nhà, anh tặng em skin hiếm nhé!\"",
+        options:[{t:"Gửi ảnh nhưng không gửi địa chỉ."},{t:"Không gửi thông tin gì, chặn tài khoản và kể với bố mẹ.",ok:true},{t:"Gửi cả hai để nhận skin."}],
+        why:"Người lạ dùng quà để dụ em gửi ảnh và thông tin cá nhân. Ảnh đã gửi đi thì không lấy lại được.",
+        tip:"Quà từ người lạ trên mạng thường đi kèm cái bẫy." },
+      { from:"Bạn quen qua mạng 2 tháng", text:"\"Mai mình gặp nhau ở quán net gần trường nhé. Đừng nói với ba mẹ, họ không hiểu đâu.\"",
+        options:[{t:"Không đi, kể ngay với ba mẹ và cho họ xem tin nhắn.",ok:true},{t:"Đi một mình, chỉ gặp chút thôi."},{t:"Rủ thêm một bạn cùng lớp đi cho an toàn."}],
+        why:"Lời dặn \"đừng nói với ba mẹ\" là dấu hiệu nguy hiểm rõ nhất. Em không thể biết chắc người đó thật sự là ai.",
+        tip:"Ai bảo em giữ bí mật với bố mẹ: hãy kể ngay cho bố mẹ." },
+      { from:"Lời mời kết bạn", text:"Tài khoản không ảnh đại diện, không bạn chung, nhắn: \"Cho mình xin số điện thoại làm quen nha.\"",
+        options:[{t:"Đồng ý kết bạn và cho số điện thoại."},{t:"Đồng ý kết bạn trước, tính sau."},{t:"Không đồng ý và không cho số điện thoại.",ok:true}],
+        why:"Tài khoản trống, không bạn chung thường là tài khoản giả. Số điện thoại có thể bị dùng để lừa đảo hoặc làm phiền.",
+        tip:"Chỉ kết bạn với người em biết ngoài đời." }
+    ]},
+  { icon:"🏫", name:"Trường học Văn minh",
+    npc:{ name:"Cô giáo Lan", tx:24.5, ty:9, look:"teacher" },
+    intro:"Chào em! Ở trường, mạng xã hội cũng là một \"lớp học\". Cô muốn xem em ứng xử thế nào nhé.",
+    lesson:"Không tham gia bắt nạt, lưu bằng chứng khi bị đe dọa, báo người lớn tin cậy và luôn bình luận tử tế.",
+    items:[
+      { from:"Nhóm Zalo của lớp", text:"Một số bạn đang gửi ảnh chế và trêu chọc một bạn trong lớp. Mọi người thả \"haha\" liên tục.",
+        options:[{t:"Thả \"haha\" cho giống mọi người."},{t:"Không tham gia, nhắc các bạn dừng lại và báo thầy cô chủ nhiệm.",ok:true},{t:"Rời nhóm và coi như không biết."}],
+        why:"Im lặng hay hùa theo đều khiến việc bắt nạt tiếp diễn. Một lời nhắc và báo thầy cô có thể giúp bạn ấy.",
+        tip:"Đứng về phía bạn bị bắt nạt." },
+      { from:"Tin nhắn từ một nhóm bạn", text:"\"Mai ra cổng trường biết tay tụi tao!\"",
+        options:[{t:"Nhắn lại chửi cho bằng được."},{t:"Im lặng chịu đựng một mình."},{t:"Không trả lời, chụp lại làm bằng chứng và báo bố mẹ, thầy cô.",ok:true}],
+        why:"Đáp trả làm mọi chuyện căng thẳng hơn, im lặng một mình thì không ai giúp được em. Bằng chứng giúp người lớn xử lý đúng.",
+        tip:"Bị đe dọa: Lưu lại, Không đáp trả, Báo người lớn." },
+      { from:"Bài đăng của bạn cùng lớp", text:"Bạn em vừa đăng ảnh đạt giải cuộc thi vẽ. Em bình luận gì?",
+        options:[{t:"\"Chúc mừng bạn, tranh đẹp quá!\"",ok:true},{t:"\"Ăn may thôi mà.\""},{t:"Chia sẻ ảnh của bạn kèm chú thích chế giễu."}],
+        why:"Lời nói trên mạng cũng làm người khác vui hoặc buồn như ngoài đời. Bình luận tử tế giúp mạng xã hội văn minh hơn.",
+        tip:"Trước khi bình luận: điều này có tử tế không?" }
+    ]}
+];
+const MAYOR = { name:"Bác Trưởng thôn", tx:23.5, ty:17, look:"mayor" };
+const MAX_HEARTS = 5;
+
+/* =====================================================================
+   PHẦN 2. BẢN ĐỒ (tạo bằng code, mỗi ô 16x16 điểm ảnh)
+   ===================================================================== */
+const T = 16, MW = 40, MH = 30;
+const G=0, FL=1, PATH=2, WATER=3, TREE=4, BUSH=5, STONE=6, BLD=7, FOUNT=8;
+const SOLID = new Set([WATER, TREE, BUSH, BLD, FOUNT]);
+const map = [];
+for(let y=0;y<MH;y++){ map.push(new Array(MW).fill(G)); }
+const inMap = (x,y)=> x>=0 && y>=0 && x<MW && y<MH;
+const setT = (x,y,v)=>{ if(inMap(x,y)) map[y][x]=v; };
+const rect = (x,y,w,h,v)=>{ for(let j=y;j<y+h;j++) for(let i=x;i<x+w;i++) setT(i,j,v); };
+
+// Bộ sinh số ngẫu nhiên cố định (mỗi lần mở bản đồ giống nhau)
+let seed = 20261122;
+const rnd = ()=>{ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed>>>15, 1|seed); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14) >>> 0) / 4294967296; };
+
+// Các tòa nhà: x, y, rộng, cao (tính theo ô), cửa ở giữa cạnh dưới
+const BUILDINGS = [
+  { id:"pass",   x:4,  y:4,  w:6, h:4, wall:"#e9dcc3", roof:"#3f6fb5", zone:0 },
+  { id:"market", x:29, y:4,  w:7, h:4, wall:"#f3e3c3", roof:"#c8462f", zone:1, awning:true },
+  { id:"news",   x:4,  y:20, w:6, h:4, wall:"#e3e7ee", roof:"#5a6b7d", zone:2 },
+  { id:"school", x:15, y:3,  w:10,h:5, wall:"#f6e7b0", roof:"#b5523a", zone:4, flag:true }
+];
+BUILDINGS.forEach(b=>{ b.dx = b.x + Math.floor(b.w/2); b.dy = b.y + b.h - 1; });
+
+// Đường đi
+rect(2,15,MW-4,2,PATH);            // đường ngang chính
+rect(19,2,2,MH-4,PATH);            // đường dọc chính
+rect(16,12,8,8,STONE);             // quảng trường
+rect(7,8,1,7,PATH);                // tới Cổng Mật khẩu
+rect(32,8,1,7,PATH);               // tới Chợ Quà tặng
+rect(20,8,1,1,PATH);
+rect(11,17,1,9,PATH); rect(7,24,5,2,PATH); // tới Tòa soạn
+rect(30,17,1,3,PATH); rect(26,19,5,1,PATH); // tới Công viên
+// Hồ nước trong công viên
+for(let y=20;y<=26;y++) for(let x=28;x<=35;x++){
+  const dx=(x-31.5)/4.3, dy=(y-23)/3.2; if(dx*dx+dy*dy<1) setT(x,y,WATER);
+}
+// Đài phun nước giữa quảng trường
+rect(19,13,2,2,FOUNT);
+// Viền cây quanh bản đồ
+for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+  if(x<2||y<2||x>=MW-2||y>=MH-2){ if(map[y][x]!==PATH || x===0||y===0||x===MW-1||y===MH-1) setT(x,y,TREE); }
+}
+rect(0,15,2,2,TREE); rect(MW-2,15,2,2,TREE); rect(19,0,2,2,TREE); rect(19,MH-2,2,2,TREE);
+// Tòa nhà chiếm ô
+BUILDINGS.forEach(b=> rect(b.x,b.y,b.w,b.h,BLD));
+
+// Ô cần chừa trống (quanh nhân vật, cửa, đường)
+const reserved = new Set();
+const reserve = (x,y,r)=>{ for(let j=-r;j<=r;j++) for(let i=-r;i<=r;i++) reserved.add((x+i)+","+(y+j)); };
+[...ZONES.map(z=>z.npc), MAYOR].forEach(n=> reserve(Math.floor(n.tx), Math.floor(n.ty), 2));
+BUILDINGS.forEach(b=> reserve(b.dx, b.dy+1, 1));
+reserve(20,18,2);
+// Cây, bụi, hoa ngẫu nhiên
+for(let y=2;y<MH-2;y++) for(let x=2;x<MW-2;x++){
+  if(map[y][x]!==G || reserved.has(x+","+y)) continue;
+  let nearPath=false;
+  for(let j=-1;j<=1;j++) for(let i=-1;i<=1;i++){ const v=inMap(x+i,y+j)?map[y+j][x+i]:G; if(v===PATH||v===STONE||v===BLD) nearPath=true; }
+  const r = rnd();
+  if(!nearPath && r<0.07) setT(x,y,TREE);
+  else if(!nearPath && r<0.10) setT(x,y,BUSH);
+  else if(r<0.20) setT(x,y,FL);
+}
+
+/* =====================================================================
+   PHẦN 3. VẼ BẢN ĐỒ TĨNH (vẽ một lần lên canvas phụ)
+   ===================================================================== */
+const mapCv = document.createElement("canvas");
+mapCv.width = MW*T; mapCv.height = MH*T;
+const m = mapCv.getContext("2d");
+const px = (c,x,y,w=1,h=1)=>{ m.fillStyle=c; m.fillRect(x,y,w,h); };
+
+function drawGrass(x,y,flowers){
+  const X=x*T, Y=y*T; px("#7ec850",X,Y,T,T);
+  for(let k=0;k<6;k++){ px(rnd()<.5?"#6db942":"#8fd65f", X+Math.floor(rnd()*15), Y+Math.floor(rnd()*15), 1, 2); }
+  if(flowers){ const cols=["#ffffff","#ffe066","#ff8fb1","#c9a7ff"];
+    for(let k=0;k<3;k++){ const fx=X+2+Math.floor(rnd()*11), fy=Y+2+Math.floor(rnd()*11), c=cols[Math.floor(rnd()*cols.length)];
+      px(c,fx,fy); px(c,fx-1,fy); px(c,fx+1,fy); px(c,fx,fy-1); px(c,fx,fy+1); px("#f2b705",fx,fy); } }
+}
+function drawPath(x,y){ const X=x*T,Y=y*T; px("#ddbb7f",X,Y,T,T);
+  for(let k=0;k<7;k++) px(rnd()<.5?"#cba468":"#e8cd98", X+Math.floor(rnd()*15), Y+Math.floor(rnd()*15), 2, 1); }
+function drawStone(x,y){ const X=x*T,Y=y*T; px("#d6dae0",X,Y,T,T); px("#bcc3cc",X,Y+7,T,1); px("#bcc3cc",X,Y+15,T,1);
+  px("#bcc3cc",X+((y%2)?3:11),Y,1,7); px("#bcc3cc",X+((y%2)?11:3),Y+8,1,7); }
+function drawWaterBase(x,y){ const X=x*T,Y=y*T; px("#4aa3df",X,Y,T,T);
+  const land=(i,j)=>!inMap(i,j)||map[j][i]!==WATER;
+  if(land(x,y-1)) px("#a7dcf7",X,Y,T,2); if(land(x,y+1)) px("#2f86c2",X,Y+14,T,2);
+  if(land(x-1,y)) px("#a7dcf7",X,Y,2,T); if(land(x+1,y)) px("#2f86c2",X+14,Y,2,T); }
+function drawTree(x,y){ drawGrass(x,y,false); const X=x*T,Y=y*T;
+  px("rgba(0,0,0,.18)",X+3,Y+13,10,3); px("#7a4b24",X+7,Y+10,3,5); px("#8f5a2c",X+7,Y+10,1,5);
+  px("#2e7d32",X+2,Y+3,12,8); px("#2e7d32",X+4,Y+1,8,12); px("#3f9b42",X+3,Y+3,9,6); px("#3f9b42",X+5,Y+2,6,9);
+  px("#5cbf4f",X+5,Y+3,3,2); px("#5cbf4f",X+4,Y+5,2,2); }
+function drawBush(x,y){ drawGrass(x,y,false); const X=x*T,Y=y*T;
+  px("rgba(0,0,0,.18)",X+2,Y+12,12,3); px("#2e7d32",X+2,Y+6,12,7); px("#2e7d32",X+4,Y+4,8,10);
+  px("#43a047",X+3,Y+6,9,5); px("#66bb6a",X+5,Y+6,2,2); px("#e53935",X+9,Y+8,2,2); px("#e53935",X+5,Y+10,1,1); }
+function drawFountain(){ const X=19*T, Y=13*T;
+  m.fillStyle="#9aa4b0"; m.beginPath(); m.arc(X+16,Y+17,15,0,Math.PI*2); m.fill();
+  m.fillStyle="#b8c0ca"; m.beginPath(); m.arc(X+16,Y+16,15,0,Math.PI*2); m.fill();
+  m.fillStyle="#4aa3df"; m.beginPath(); m.arc(X+16,Y+16,11,0,Math.PI*2); m.fill();
+  px("#9aa4b0",X+14,Y+10,4,8); px("#b8c0ca",X+15,Y+10,2,8); }
+function shade(hex, amt){ const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt, g=(n>>8&255)+amt, b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
+function drawBuilding(b){
+  const X=b.x*T, Y=b.y*T, W=b.w*T, H=b.h*T, roofH = (b.h>=5?3:2)*T-4;
+  px("rgba(0,0,0,.2)",X+3,Y+H-2,W-2,4);
+  // Tường
+  px(b.wall,X+2,Y+roofH,W-4,H-roofH);
+  for(let yy=Y+roofH+4; yy<Y+H-2; yy+=5) px(shade(b.wall,-14),X+2,yy,W-4,1);
+  px(shade(b.wall,-40),X+2,Y+H-3,W-4,3);
+  // Mái
+  px(shade(b.roof,-35),X,Y+roofH-2,W,3);
+  px(b.roof,X,Y+4,W,roofH-4);
+  for(let yy=Y+6; yy<Y+roofH-2; yy+=4) px(shade(b.roof,-22),X,yy,W,1);
+  px(shade(b.roof,25),X+3,Y+2,W-6,3); px(shade(b.roof,-30),X+3,Y+4,W-6,1);
+  // Cửa sổ
+  const doorX=b.dx*T;
+  for(let wx=X+6; wx<X+W-12; wx+=T*1.5){
+    if(Math.abs(wx+4-(doorX+8))<14) continue;
+    const wy=Y+roofH+6; px("#ffffff",wx,wy,10,9); px("#7cc4f0",wx+1,wy+1,8,7); px("#ffffff",wx+5,wy+1,1,7); px("#ffffff",wx+1,wy+4,8,1); px("#c7ebff",wx+1,wy+1,3,2);
+  }
+  // Mái che chợ
+  if(b.awning){ for(let i=0;i<W;i+=6){ px(i/6%2?"#ffffff":"#e5533d",X+i,Y+roofH,6,6); } px(shade("#e5533d",-30),X,Y+roofH+6,W,1); }
+  // Cửa ra vào
+  const dX=doorX+3, dY=Y+H-15; px("#5b3418",dX-1,dY-1,12,15); px("#94592a",dX,dY,10,14); px("#7a4a22",dX+5,dY,1,14); px("#f2c94c",dX+7,dY+7,1,1);
+  // Cờ trường
+  if(b.flag){ const fx=X+W-14, fy=Y-10; px("#6b6b6b",fx,fy,1,16); px("#da251d",fx+1,fy,11,7); px("#ffde00",fx+6,fy+2,1,3); px("#ffde00",fx+5,fy+3,3,1); }
+}
+for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+  const v=map[y][x];
+  if(v===G) drawGrass(x,y,false); else if(v===FL) drawGrass(x,y,true);
+  else if(v===PATH) drawPath(x,y); else if(v===STONE||v===FOUNT) drawStone(x,y);
+  else if(v===WATER) drawWaterBase(x,y); else if(v===TREE) drawTree(x,y);
+  else if(v===BUSH) drawBush(x,y); else if(v===BLD) drawGrass(x,y,false);
+}
+drawFountain();
+BUILDINGS.forEach(drawBuilding);
+// Ghế đá công viên
+[[26,21],[26,24]].forEach(([x,y])=>{ const X=x*T,Y=y*T; px("#8d6e63",X+2,Y+6,12,3); px("#6d4c41",X+3,Y+9,2,4); px("#6d4c41",X+11,Y+9,2,4); px("#a1887f",X+2,Y+6,12,1); });
+
+/* =====================================================================
+   PHẦN 4. NHÂN VẬT (vẽ điểm ảnh bằng code)
+   ===================================================================== */
+const LOOKS = {
+  boy:     { skin:"#f3c79b", hair:"#2b2018", shirt:"#ffffff", pants:"#2f4fa8", shoe:"#333", scarf:true },
+  girl:    { skin:"#f6cda8", hair:"#2b1a10", shirt:"#ffffff", pants:"#2f4fa8", shoe:"#5b3418", scarf:true, long:true, skirt:true, clip:"#ff6fa3" },
+  guard:   { skin:"#e8b98f", hair:"#555555", shirt:"#5a7a3e", pants:"#3b4a2b", shoe:"#222", cap:"#3b4a2b" },
+  seller:  { skin:"#f1c39a", hair:"#3a2414", shirt:"#f28c28", pants:"#7a4a1f", shoe:"#4a2c14", long:true },
+  reporter:{ skin:"#e9b48c", hair:"#222222", shirt:"#2b7bbf", pants:"#444444", shoe:"#222", glasses:true },
+  na:      { skin:"#f6cfa8", hair:"#3a2414", shirt:"#e85d9a", pants:"#6a4fb3", shoe:"#333", scarf:true, pig:true },
+  teacher: { skin:"#f3c9a3", hair:"#1d1d1d", shirt:"#fbf3e2", pants:"#fbf3e2", shoe:"#7a4a22", long:true, dress:true },
+  mayor:   { skin:"#e8b48a", hair:"#d9d9d9", shirt:"#8e2c2c", pants:"#333333", shoe:"#222" }
+};
+let S = 3, camX = 0, camY = 0;
+function drawChar(ctx, cx, cy, L, dir, phase){
+  const ox = cx-8, oy = cy-15;
+  const p=(x,y,w,h,c)=>{ ctx.fillStyle=c; ctx.fillRect(Math.round((ox+x-camX)*S), Math.round((oy+y-camY)*S), Math.ceil(w*S), Math.ceil(h*S)); };
+  p(3,14,10,2,"rgba(0,0,0,.22)");
+  const step = phase===1?1:phase===3?-1:0;
+  if(L.dress){ p(4,10,8,4,L.pants); p(4,13,8,1,shade(L.pants,-30)); p(5,14,2,1,L.shoe); p(9,14,2,1,L.shoe); }
+  else if(L.skirt){ p(5,12,2,2-(step>0?1:0),L.skin); p(9,12,2,2-(step<0?1:0),L.skin);
+    p(5,14-(step>0?1:0),2,1,L.shoe); p(9,14-(step<0?1:0),2,1,L.shoe);
+  }
+  else { const lh=4; p(5,11,2,lh-(step>0?1:0),L.pants); p(9,11,2,lh-(step<0?1:0),L.pants);
+    p(5,14-(step>0?1:0),2,1,L.shoe); p(9,14-(step<0?1:0),2,1,L.shoe); }
+  p(4,7,8,5,L.shirt); p(4,11,8,1,shade(L.shirt,-25));
+  if(L.skirt){ p(3,10,10,3,L.pants); p(3,12,10,1,shade(L.pants,-30)); p(5,10,1,3,shade(L.pants,-18)); p(10,10,1,3,shade(L.pants,-18)); }
+  const a = step;
+  p(3,8+(a>0?1:0),1,3,L.shirt); p(12,8+(a<0?1:0),1,3,L.shirt);
+  p(3,11+(a>0?1:0),1,1,L.skin); p(12,11+(a<0?1:0),1,1,L.skin);
+  if(L.scarf && dir!=="up"){ p(6,7,4,1,"#e53935"); p(7,8,2,2,"#e53935"); }
+  p(4,1,8,6,L.skin);
+  if(dir==="up"){ p(3,0,10,7,L.hair); if(L.long) p(3,6,10,3,L.hair); }
+  else if(dir==="down"){ p(4,0,8,2,L.hair); p(3,1,1,4,L.hair); p(12,1,1,4,L.hair); p(4,2,3,1,L.hair); p(9,2,2,1,L.hair);
+    if(L.long){ p(3,5,1,4,L.hair); p(12,5,1,4,L.hair); }
+    p(6,4,1,2,"#222"); p(9,4,1,2,"#222"); p(5,6,1,1,"#f19c8c"); p(10,6,1,1,"#f19c8c");
+    if(L.glasses){ p(5,4,3,1,"#222"); p(8,4,3,1,"#222"); } }
+  else if(dir==="left"){ p(4,0,8,2,L.hair); p(8,1,5,5,L.hair); if(L.long) p(9,5,4,4,L.hair); p(5,4,1,2,"#222"); if(L.glasses) p(4,4,3,1,"#222"); }
+  else { p(4,0,8,2,L.hair); p(3,1,5,5,L.hair); if(L.long) p(3,5,4,4,L.hair); p(10,4,1,2,"#222"); if(L.glasses) p(9,4,3,1,"#222"); }
+  if(L.clip){ if(dir==="down"||dir==="right") p(10,1,2,1,L.clip); else if(dir==="left") p(4,1,2,1,L.clip); else p(9,1,2,2,L.clip); }
+  if(L.pig && dir!=="up"){ p(2,3,1,3,L.hair); p(13,3,1,3,L.hair); p(2,2,1,1,"#e53935"); p(13,2,1,1,"#e53935"); }
+  if(L.cap){ p(4,0,8,2,L.cap); if(dir==="down") p(3,2,10,1,L.cap); else if(dir==="left") p(2,2,4,1,L.cap); else if(dir==="right") p(10,2,4,1,L.cap); }
+}
+
+/* =====================================================================
+   PHẦN 5. TRẠNG THÁI TRÒ CHƠI
+   ===================================================================== */
+const START = { x:20*T, y:18*T+8 };
+let st;
+const NPCS = [...ZONES.map((z,i)=>({ ...z.npc, zone:i })), { ...MAYOR, zone:-1 }];
+NPCS.forEach(n=>{ n.x=n.tx*T; n.y=n.ty*T+8; n.dir="down"; n.t=Math.random()*3; });
+function newState(name, look){
+  return { name, look, hearts:MAX_HEARTS, shields:0, done:ZONES.map(()=>false), score:ZONES.map(()=>0),
+           p:{ x:START.x, y:START.y, dir:"up", phase:0, anim:0 }, playing:false };
+}
+
+/* =====================================================================
+   PHẦN 6. VÒNG LẶP, DI CHUYỂN, VA CHẠM
+   ===================================================================== */
+const cv = document.getElementById("view"), ctx = cv.getContext("2d");
+const mini = document.getElementById("minimap"), mctx = mini.getContext("2d");
+let DPR = 1;
+function resize(){
+  DPR = window.devicePixelRatio || 1;
+  cv.width = Math.floor(cv.clientWidth*DPR); cv.height = Math.floor(cv.clientHeight*DPR);
+  const tilesAcross = cv.clientWidth < 600 ? 11 : 16;
+  S = Math.max(2, Math.floor(cv.clientWidth / (tilesAcross*T))) * DPR;
+}
+window.addEventListener("resize", resize);
+
+const keys = {};
+const KEYMAP = { ArrowUp:"up", KeyW:"up", ArrowDown:"down", KeyS:"down", ArrowLeft:"left", KeyA:"left", ArrowRight:"right", KeyD:"right" };
+window.addEventListener("keydown", e=>{
+  if(document.activeElement && document.activeElement.tagName==="INPUT") return;
+  if(KEYMAP[e.code]){ keys[KEYMAP[e.code]] = true; e.preventDefault(); }
+  if(e.code==="Space"||e.code==="Enter"||e.code==="KeyE"){ e.preventDefault(); action(); }
+  if(dlgState.choices && ["Digit1","Digit2","Digit3"].includes(e.code)){ const b=dlg.querySelectorAll(".opt")[+e.code.slice(-1)-1]; if(b && !b.disabled) b.click(); }
+});
+window.addEventListener("keyup", e=>{ if(KEYMAP[e.code]) keys[KEYMAP[e.code]] = false; });
+window.addEventListener("blur", ()=>{ for(const k in keys) keys[k]=false; });
+
+// Nút cảm ứng
+if(window.matchMedia("(pointer:coarse)").matches || "ontouchstart" in window) document.body.classList.add("touch");
+document.querySelectorAll("#pad button").forEach(b=>{
+  const d=b.dataset.dir;
+  b.addEventListener("pointerdown", e=>{ e.preventDefault(); keys[d]=true; b.setPointerCapture(e.pointerId); });
+  ["pointerup","pointercancel","pointerleave"].forEach(ev=> b.addEventListener(ev, ()=>{ keys[d]=false; }));
+});
+document.getElementById("abtn").addEventListener("pointerdown", e=>{ e.preventDefault(); action(); });
+
+function tileAt(px_,py_){ const x=Math.floor(px_/T), y=Math.floor(py_/T); return inMap(x,y)?map[y][x]:TREE; }
+function blocked(x,y){
+  const hw=4, top=y-5, bot=y;
+  for(const [cx,cy] of [[x-hw,top],[x+hw,top],[x-hw,bot],[x+hw,bot],[x,top],[x,bot]]) if(SOLID.has(tileAt(cx,cy))) return true;
+  for(const n of NPCS){ if(Math.abs(n.x-x)<10 && Math.abs(n.y-y)<7) return true; }
+  return false;
+}
+function nearestNpc(){
+  let best=null, bd=26;
+  for(const n of NPCS){ const d=Math.hypot(n.x-st.p.x, n.y-st.p.y); if(d<bd){ bd=d; best=n; } }
+  return best;
+}
+
+let last = performance.now(), clock = 0;
+function loop(now){
+  const dt = Math.min(0.05,(now-last)/1000); last = now; clock += dt;
+  if(st && st.playing && !dlgState.open) update(dt);
+  render();
+  if(document.getElementById("ov-start").classList.contains("show")) drawPreviews();
+  requestAnimationFrame(loop);
+}
+function update(dt){
+  const p = st.p, sp = 72*dt;
+  let vx = (keys.right?1:0)-(keys.left?1:0), vy = (keys.down?1:0)-(keys.up?1:0);
+  if(vx&&vy){ vx*=0.7071; vy*=0.7071; }
+  if(vx||vy){
+    if(Math.abs(vx)>Math.abs(vy)) p.dir = vx>0?"right":"left"; else p.dir = vy>0?"down":"up";
+    const nx = p.x+vx*sp, ny = p.y+vy*sp;
+    if(!blocked(nx,p.y)) p.x = nx;
+    if(!blocked(p.x,ny)) p.y = ny;
+    p.anim += dt; if(p.anim>0.14){ p.anim=0; p.phase=(p.phase+1)%4; }
+  } else { p.phase = 0; }
+  // NPC quay mặt về phía người chơi khi ở gần
+  NPCS.forEach(n=>{ const d=Math.hypot(n.x-p.x,n.y-p.y);
+    if(d<40){ const dx=p.x-n.x, dy=p.y-n.y; n.dir = Math.abs(dx)>Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up"); } else n.dir="down"; });
+  const n = nearestNpc(); const hint=document.getElementById("hint");
+  if(n){ hint.style.display="block"; hint.textContent = (document.body.classList.contains("touch")?"Bấm nút 💬 Nói":"Nhấn E hoặc Space")+" để nói chuyện với "+n.name; }
+  else hint.style.display="none";
+}
+
+/* =====================================================================
+   PHẦN 7. VẼ KHUNG HÌNH
+   ===================================================================== */
+function render(){
+  const W=cv.width, H=cv.height;
+  ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle="#1b2a1b"; ctx.fillRect(0,0,W,H);
+  const p = st ? st.p : START;
+  const vw=W/S, vh=H/S;
+  camX = Math.max(0, Math.min(MW*T-vw, p.x - vw/2)); camY = Math.max(0, Math.min(MH*T-vh, p.y - vh/2));
+  if(MW*T<vw) camX=(MW*T-vw)/2; if(MH*T<vh) camY=(MH*T-vh)/2;
+  ctx.drawImage(mapCv, camX, camY, vw, vh, 0, 0, W, H);
+  // Sóng nước
+  const x0=Math.floor(camX/T), y0=Math.floor(camY/T), x1=Math.ceil((camX+vw)/T), y1=Math.ceil((camY+vh)/T);
+  ctx.fillStyle="rgba(255,255,255,.55)";
+  for(let y=y0;y<y1;y++) for(let x=x0;x<x1;x++){
+    if(!inMap(x,y)||map[y][x]!==WATER) continue;
+    const off=(clock*6 + x*5 + y*3)%12;
+    ctx.fillRect((x*T+2+off-camX)*S,(y*T+5+(x%2)*5-camY)*S,4*S,1*S);
+  }
+  // Tia nước đài phun
+  const fx=20*T, fy=13*T+6;
+  for(let k=0;k<6;k++){ const a=k/6*Math.PI*2+clock*2, r=3+((clock*20+k*7)%6);
+    ctx.fillStyle="rgba(220,245,255,.9)"; ctx.fillRect((fx+Math.cos(a)*r-camX)*S,(fy+Math.sin(a)*r*.6-camY)*S,S,S); }
+  // Nhân vật sắp theo chiều sâu
+  const ents = NPCS.map(n=>({y:n.y, draw:()=>drawChar(ctx,n.x,n.y+Math.round(Math.sin(clock*2+n.t)*0.4),LOOKS[n.look],n.dir,0)}));
+  if(st) ents.push({y:p.y, draw:()=>drawChar(ctx,p.x,p.y,LOOKS[st.look],p.dir,p.phase)});
+  ents.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
+  // Bóng chữ trên đầu nhân vật
+  const fs = Math.round(11*DPR);
+  NPCS.forEach(n=>{
+    let mark, col;
+    if(n.zone>=0){ mark = st&&st.done[n.zone] ? "✓" : "!"; col = mark==="✓"?"#16a34a":"#f59e0b"; }
+    else { mark = st&&st.done.every(Boolean) ? "★" : "?"; col="#2563eb"; }
+    const bx=(n.x-camX)*S, by=(n.y-22-camY)*S + Math.sin(clock*4+n.t)*2*DPR;
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(bx,by,8*DPR,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.font=`800 ${fs}px sans-serif`; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(mark,bx,by+1);
+  });
+  // Biển tên khu vực
+  ctx.font=`700 ${Math.round(12*DPR)}px "Segoe UI",sans-serif`; ctx.textBaseline="middle";
+  const labels = BUILDINGS.map(b=>({x:(b.x+b.w/2)*T, y:b.y*T-4, z:b.zone}));
+  labels.push({x:31.5*T, y:19.6*T, z:3});
+  labels.forEach(l=>{
+    const z=ZONES[l.z], txt=z.icon+" "+z.name+(st&&st.done[l.z]?" ✓":"");
+    const tx=(l.x-camX)*S, ty=(l.y-camY)*S; const w=ctx.measureText(txt).width+14*DPR, h=20*DPR;
+    if(tx<-w||tx>W+w||ty<-h||ty>H+h) return;
+    ctx.fillStyle="rgba(255,255,255,.92)"; roundRect(ctx,tx-w/2,ty-h/2,w,h,8*DPR); ctx.fill();
+    ctx.fillStyle="#1d2b3a"; ctx.textAlign="center"; ctx.fillText(txt,tx,ty+1);
+  });
+  drawMini();
+}
+function roundRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+function drawMini(){
+  const w=mini.width, h=mini.height; mctx.imageSmoothingEnabled=false;
+  mctx.drawImage(mapCv,0,0,MW*T,MH*T,0,0,w,h);
+  const sx=w/(MW*T), sy=h/(MH*T);
+  NPCS.forEach(n=>{ mctx.fillStyle = n.zone<0?"#2563eb":(st&&st.done[n.zone]?"#16a34a":"#f59e0b"); mctx.fillRect(n.x*sx-2,n.y*sy-3,4,4); });
+  if(st){ mctx.fillStyle="#e53935"; mctx.fillRect(st.p.x*sx-2.5,st.p.y*sy-3.5,5,5); mctx.strokeStyle="#fff"; mctx.strokeRect(st.p.x*sx-2.5,st.p.y*sy-3.5,5,5); }
+}
+
+/* =====================================================================
+   PHẦN 8. HỘP THOẠI VÀ THỬ THÁCH
+   ===================================================================== */
+const dlg = document.getElementById("dlg");
+const dlgState = { open:false, queue:[], onDone:null, typing:null, full:"", choices:false };
+const esc = s=> String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function say(name, lines, onDone){
+  dlgState.open=true; dlgState.queue=lines.slice(); dlgState.onDone=onDone; dlgState.name=name; dlgState.choices=false;
+  document.getElementById("hint").style.display="none";
+  nextLine();
+}
+function nextLine(){
+  if(!dlgState.queue.length){ const cb=dlgState.onDone; closeDlg(); if(cb) cb(); return; }
+  const line = dlgState.queue.shift(); dlgState.full=line;
+  dlg.innerHTML = `<div class="name">${esc(dlgState.name)}</div><div class="text" id="dtext"></div><div class="more">▼ Nhấn để tiếp</div>`;
+  dlg.style.display="block";
+  const el=document.getElementById("dtext"); let i=0;
+  clearInterval(dlgState.typing);
+  dlgState.typing=setInterval(()=>{ i+=2; el.textContent=line.slice(0,i); if(i>=line.length){ clearInterval(dlgState.typing); dlgState.typing=null; } },18);
+}
+dlg.addEventListener("click", e=>{ if(dlgState.open && !dlgState.choices && !e.target.closest("button")) advance(); });
+function advance(){
+  if(dlgState.typing){ clearInterval(dlgState.typing); dlgState.typing=null; const el=document.getElementById("dtext"); if(el) el.textContent=dlgState.full; return; }
+  nextLine();
+}
+function closeDlg(){ dlgState.closedAt=performance.now(); dlgState.open=false; dlgState.choices=false; dlg.style.display="none"; dlg.innerHTML=""; cv.focus(); }
+function action(){
+  if(!st || !st.playing) return;
+  if(dlgState.open){ if(!dlgState.choices) advance(); else { const nb=dlg.querySelector(".next"); if(nb) nb.click(); } return; }
+  if(performance.now()-(dlgState.closedAt||0) < 350) return;
+  const n = nearestNpc(); if(n) talk(n);
+}
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function talk(n){
+  if(n.zone<0){
+    const left = st.done.filter(d=>!d).length;
+    if(left===0) say(n.name, ["Tuyệt vời, "+st.name+"! Cháu đã đi khắp Thị trấn Mạng.", "Bác trao cho cháu huy hiệu Công dân số!"], showEnd);
+    else say(n.name, ["Cháu còn "+left+" khu chưa hoàn thành. Hãy tìm những người có dấu ! màu cam trên đầu nhé!"]);
+    return;
+  }
+  const z = ZONES[n.zone];
+  if(st.done[n.zone]){ say(n.name, ["Cháu đã vượt qua khu này rồi!", "Nhớ nhé: "+z.lesson]); return; }
+  say(n.name, [z.intro], ()=> ask(n.zone, 0));
+}
+function ask(zi, ii){
+  const z=ZONES[zi], it=z.items[ii];
+  dlgState.open=true; dlgState.choices=true;
+  dlg.style.display="block";
+  dlg.innerHTML = `<div class="name">${esc(z.npc.name)} · ${esc(z.icon+" "+z.name)} ${ii+1}/${z.items.length}</div>
+    <div class="msg"><div class="from">${esc(it.from)}</div>${esc(it.text)}</div>
+    <div><b>Em sẽ làm gì?</b></div><div id="opts"></div>`;
+  const box = document.getElementById("opts");
+  shuffle(it.options).forEach((o,k)=>{
+    const b=document.createElement("button"); b.className="opt"; b.textContent=(k+1)+". "+o.t; b.dataset.ok=o.ok?"1":"";
+    b.onclick=()=>choose(b,o,zi,ii); box.appendChild(b);
+  });
+}
+function choose(btn,o,zi,ii){
+  const z=ZONES[zi], it=z.items[ii];
+  dlg.querySelectorAll(".opt").forEach(b=>{ b.disabled=true; if(b.dataset.ok) b.classList.add("right"); });
+  if(o.ok){ st.shields++; st.score[zi]++; } else { btn.classList.add("wrong"); st.hearts--; }
+  updateHud();
+  const fb=document.createElement("div"); fb.className="fb "+(o.ok?"ok":"no");
+  fb.innerHTML = `<b>${o.ok?"🛡️ Chính xác! +1 Khiên":"❤️ Chưa đúng, em mất 1 Tim"}</b><br>${esc(it.why)}<br>💡 <b>Ghi nhớ:</b> ${esc(it.tip)}`;
+  dlg.appendChild(fb);
+  const nb=document.createElement("button"); nb.className="next"; nb.textContent = st.hearts<=0 ? "Xem kết quả" : "Tiếp tục";
+  nb.onclick=()=>{
+    if(st.hearts<=0){ closeDlg(); st.playing=false; show("ov-over"); return; }
+    if(ii+1<z.items.length){ ask(zi,ii+1); return; }
+    st.done[zi]=true; updateHud();
+    dlgState.choices=false;
+    const remain = st.done.filter(d=>!d).length;
+    say(z.npc.name, ["Giỏi lắm! Cháu nhận "+st.score[zi]+"/"+z.items.length+" Khiên ở khu này.", "Bài học: "+z.lesson,
+      remain? "Còn "+remain+" khu nữa. Cố lên!" : "Cháu đã hoàn thành cả 5 khu! Hãy về quảng trường gặp Bác Trưởng thôn nhé."]);
+  };
+  dlg.appendChild(nb); nb.focus();
+  fb.scrollIntoView({block:"nearest"});
+}
+
+/* =====================================================================
+   PHẦN 9. GIAO DIỆN, BẮT ĐẦU, KẾT THÚC
+   ===================================================================== */
+function updateHud(){
+  if(!st) return;
+  document.getElementById("h-hearts").textContent = "❤️".repeat(Math.max(0,st.hearts)) + "🤍".repeat(MAX_HEARTS-Math.max(0,st.hearts));
+  document.getElementById("h-shields").textContent = st.shields;
+  const d = st.done.filter(Boolean).length;
+  document.getElementById("quest").textContent = d<5 ? `Nhiệm vụ: ${d}/5 khu · tìm người có dấu !` : "Về quảng trường gặp Bác Trưởng thôn ★";
+}
+function show(id){ document.getElementById(id).classList.add("show"); }
+function hide(id){ document.getElementById(id).classList.remove("show"); }
+function begin(name, look){
+  st = newState(name, look); st.playing=true; updateHud();
+  document.getElementById("hud").style.display="flex";
+  hide("ov-start"); hide("ov-over"); hide("ov-end"); cv.focus();
+  say(MAYOR.name, ["Chào mừng "+name+" đến Thị trấn Mạng!", "Thị trấn có 5 khu vực. Mỗi khu có một người đang cần cháu giúp đỡ, trên đầu họ có dấu ! màu cam.", "Hoàn thành cả 5 khu rồi quay về đây, bác sẽ trao huy hiệu Công dân số cho cháu!"]);
+}
+function showEnd(){
+  st.playing=false;
+  const total = ZONES.reduce((s,z)=>s+z.items.length,0), r = st.shields/total;
+  const [title,color] = r>=0.85?["Huy hiệu Vàng","#f59e0b"]: r>=0.6?["Huy hiệu Bạc","#94a3b8"]:["Huy hiệu Đồng","#b45309"];
+  document.getElementById("badge-fill").setAttribute("fill",color);
+  document.getElementById("end-title").textContent = title;
+  document.getElementById("end-score").innerHTML = `<b>${esc(st.name)}</b> nhận được <b>${st.shields}/${total}</b> Khiên an toàn`;
+  document.getElementById("end-lessons").innerHTML = ZONES.map(z=>`<li><b>${z.icon} ${esc(z.name)}:</b> ${esc(z.lesson)}</li>`).join("");
+  show("ov-end");
+}
+const nameInput = document.getElementById("pname");
+let chosenLook = "boy";
+document.querySelectorAll(".pick-card").forEach(c=> c.addEventListener("click", ()=>{
+  chosenLook = c.dataset.look;
+  document.querySelectorAll(".pick-card").forEach(o=>{ const on=o===c; o.classList.toggle("sel",on); o.setAttribute("aria-checked",on); });
+}));
+// Xem trước nhân vật ở màn hình bắt đầu (đi bộ, xoay 4 hướng)
+const previews = [...document.querySelectorAll("canvas.prev")];
+function drawPreviews(){
+  const dirs=["down","left","up","right"], phase=Math.floor(clock/0.16)%4, d=dirs[Math.floor(clock/1.3)%4];
+  const sv=[S,camX,camY]; S=4; camX=0; camY=0;
+  previews.forEach(c=>{ const g=c.getContext("2d"); g.imageSmoothingEnabled=false; g.clearRect(0,0,c.width,c.height);
+    const sel = c.dataset.look===chosenLook;
+    drawChar(g, 8, 16.5, LOOKS[c.dataset.look], sel?d:"down", sel?phase:0); });
+  [S,camX,camY]=sv;
+}
+document.getElementById("b-start").onclick = ()=> begin(nameInput.value.trim() || "Bạn nhỏ", chosenLook);
+nameInput.addEventListener("keydown", e=>{ if(e.key==="Enter") document.getElementById("b-start").click(); });
+document.getElementById("b-retry").onclick = ()=> begin(st.name, st.look);
+document.getElementById("b-again").onclick = ()=> begin(st.name, st.look);
+
+resize();
+requestAnimationFrame(loop);
+window.__game = { get st(){ return st; }, NPCS, talk, ZONES };
+}
+</script>
+</body>
+</html>
