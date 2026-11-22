@@ -359,16 +359,22 @@ with tab2:
             st.rerun()
 
 
+
 with tab4:
-    st.subheader('🌐 Trò chơi trực tuyến – Digital World: Thế giới số – Digital World: Thế giới số')
-    st.write('Cùng khám phá các nhiệm vụ về an toàn trên không gian mạng qua trò chơi nhập vai Digital World.')
-    st.info('Nhấn nút bên dưới để mở trò chơi trên trang web bên ngoài. Không cần cài đặt trực tiếp vào SchoolGuard AI.')
-    st.link_button(
-        '🎮 CHƠI NGAY – DIGITAL WORLD',
-        'https://torru.itch.io/digital-world',
-        use_container_width=True
-    )
-    st.caption('Nguồn: Digital World do bên thứ ba phát triển. SchoolGuard AI chỉ cung cấp liên kết học tập bổ trợ; nhóm KHKT không phát triển trò chơi này.')
+    st.subheader("🎮 Thị trấn Mạng – Hành trình Công dân số")
+    st.write("Khám phá 5 khu vực, vượt qua 15 tình huống về an toàn mạng để trở thành Công dân số thông thái!")
+
+    import streamlit.components.v1 as components
+    from pathlib import Path
+
+    game_file = Path(__file__).parent / "thi_tran_mang.html"
+
+    if game_file.exists():
+        html_game = game_file.read_text(encoding="utf-8")
+        components.html(html_game, height=750, scrolling=False)
+    else:
+        st.error("Không tìm thấy trò chơi thi_tran_mang.html")
+
 
 # Bộ kiểm thử minh họa được viết riêng, nhưng chưa đủ độc lập để công bố độ chính xác.
 EXAMPLES = [
